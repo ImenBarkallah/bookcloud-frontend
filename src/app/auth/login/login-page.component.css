@@ -1,0 +1,535 @@
+@import '../styles/auth-field-micro.css';
+
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow: hidden;
+}
+
+.login-canvas-layer,
+.login-static-bg {
+  position: absolute;
+  inset: 0;
+}
+
+.login-canvas-layer.hidden-three {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.login-canvas-host canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.login-static-bg {
+  background: radial-gradient(ellipse at 50% 30%, rgba(123, 94, 167, 0.35), transparent 55%),
+    radial-gradient(ellipse at 70% 70%, rgba(0, 212, 255, 0.18), transparent 45%), var(--color-bg);
+  animation: pulse-bg 12s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-bg {
+  from {
+    filter: saturate(1);
+  }
+  to {
+    filter: saturate(1.15);
+  }
+}
+
+.login-overlay {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 1rem 3rem;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  padding: 2.5rem;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.55);
+  position: relative;
+  overflow: hidden;
+}
+
+.login-card.login-success-flash {
+  box-shadow: 0 0 48px rgba(46, 204, 113, 0.65);
+  border-color: rgba(46, 204, 113, 0.55);
+}
+
+.login-book-icon {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1rem;
+  color: #7b5ea7;
+}
+
+.login-book-icon svg .book-pages {
+  animation: flip-pages 2.4s ease-in-out infinite;
+}
+
+@keyframes flip-pages {
+  0%,
+  100% {
+    transform-origin: left center;
+    transform: perspective(80px) rotateY(0deg);
+  }
+  50% {
+    transform: perspective(80px) rotateY(-18deg);
+  }
+}
+
+.login-title-block .t1 {
+  font-family: var(--font-heading);
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0 0 0.35rem;
+  color: #fff;
+  text-align: center;
+}
+
+.login-title-block .t2 {
+  margin: 0 0 1.5rem;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.5);
+  text-align: center;
+}
+
+.btn-google {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.btn-google:hover {
+  border-color: #7b5ea7;
+  box-shadow: 0 0 24px rgba(123, 94, 167, 0.35);
+}
+
+.g-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1.35rem 0;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.78rem;
+}
+
+.divider::before,
+.divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.field {
+  display: block;
+  position: relative;
+  margin-bottom: 1rem;
+  padding-top: 0.5rem;
+}
+
+.field .floating {
+  position: absolute;
+  left: 44px;
+  top: 1.15rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+  transition: top 0.2s ease, font-size 0.2s ease, color 0.2s ease;
+}
+
+.field input:focus + .floating,
+.field input:not(:placeholder-shown) + .floating {
+  top: 0;
+  font-size: 0.7rem;
+}
+
+.field input:focus ~ .floating,
+.field input:not(:placeholder-shown) ~ .floating {
+  top: 0;
+  font-size: 0.7rem;
+}
+
+/* Floating label: structure label > floating span before input — reorder in HTML */
+.field input:focus ~ .floating,
+.field input:not(:placeholder-shown) ~ .floating {
+  top: 0;
+  font-size: 0.68rem;
+  color: #7b5ea7;
+}
+
+.field-icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.45);
+  pointer-events: none;
+}
+
+.field input {
+  width: 100%;
+  height: 48px;
+  padding-left: 44px;
+  padding-right: 44px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.field.password-field input,
+.field.field-password input {
+  padding-right: 48px;
+}
+
+.field.invalid input {
+  border-color: #e74c3c !important;
+}
+
+.eye-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.55);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.login-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  font-size: 0.82rem;
+}
+
+.remember {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  cursor: pointer;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.remember input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.chk-ui {
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.05);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remember input:checked + .chk-ui {
+  background: linear-gradient(135deg, #7b5ea7, #9b7ec8);
+  border-color: transparent;
+}
+
+.remember input:checked + .chk-ui::after {
+  content: '✓';
+  font-size: 12px;
+  color: #fff;
+}
+
+.forgot {
+  color: var(--color-cyan);
+  text-decoration: none;
+  position: relative;
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  cursor: pointer;
+}
+
+.forgot::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 1px;
+  background: var(--color-cyan);
+  transition: width 0.25s ease;
+}
+
+.forgot:hover::after {
+  width: 100%;
+}
+
+.btn-submit {
+  width: 100%;
+  height: 52px;
+  border: none;
+  border-radius: 14px;
+  cursor: pointer;
+  font-family: var(--font-heading);
+  font-size: 16px;
+  font-weight: 500;
+  color: #fff;
+  background: linear-gradient(135deg, #7b5ea7, #9b7ec8);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-submit:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
+.spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.35);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.login-footer-link {
+  margin: 1.5rem 0 0;
+  text-align: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.login-footer-link a {
+  color: #7b5ea7;
+  font-weight: 600;
+  text-decoration: none;
+  background: linear-gradient(90deg, #7b5ea7, #7b5ea7) left bottom / 0 2px no-repeat;
+  transition: background-size 0.35s ease;
+}
+
+.login-footer-link a:hover {
+  background-size: 100% 2px;
+}
+
+.ripple-dot {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.45);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+/* Fix floating label order: put floating span AFTER input for ~ sibling selectors */
+.field.field-email .floating,
+.field.field-password .floating {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.field.field-email input:focus ~ .floating,
+.field.field-email input:not(:placeholder-shown) ~ .floating,
+.field.field-password input:focus ~ .floating,
+.field.field-password input:not(:placeholder-shown) ~ .floating,
+.forgot-field.field-email input:focus ~ .floating,
+.forgot-field.field-email input:not(:placeholder-shown) ~ .floating {
+  top: 0;
+  transform: none;
+  font-size: 0.68rem;
+  color: #7b5ea7;
+}
+
+/* —— Forgot password bottom sheet —— */
+.forgot-reset-root {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+
+.forgot-reset-root > * {
+  pointer-events: auto;
+}
+
+.forgot-reset-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  background: rgba(6, 6, 12, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+}
+
+.forgot-reset-sheet {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 1.25rem 1.75rem 2rem;
+  padding-bottom: max(2rem, env(safe-area-inset-bottom));
+  border-radius: 24px 24px 0 0;
+  background: rgba(22, 18, 32, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-bottom: none;
+  backdrop-filter: blur(28px);
+  -webkit-backdrop-filter: blur(28px);
+  box-shadow: 0 -12px 60px rgba(0, 0, 0, 0.65);
+  transform: translateZ(0);
+}
+
+.forgot-sheet-handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.22);
+  margin: 0 auto 1.25rem;
+}
+
+.forgot-sheet-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  padding: 0.4rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.forgot-sheet-close:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+.forgot-sheet-title {
+  font-family: var(--font-heading);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin: 0 2.5rem 0.5rem 0;
+  color: #fff;
+}
+
+.forgot-sheet-sub {
+  margin: 0 0 1.35rem;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.forgot-field {
+  margin-bottom: 1.25rem;
+}
+
+.forgot-field.field-email .floating {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.forgot-submit {
+  margin-top: 0.25rem;
+}
+
+.forgot-success-block {
+  text-align: center;
+  padding-top: 0.25rem;
+}
+
+.forgot-envelope-wrap {
+  display: flex;
+  justify-content: center;
+  margin: 0.5rem auto 1.25rem;
+  color: #7b5ea7;
+  transform-style: preserve-3d;
+  perspective: 500px;
+}
+
+.forgot-envelope-svg {
+  width: min(200px, 52vw);
+  height: auto;
+  display: block;
+  filter: drop-shadow(0 12px 28px rgba(123, 94, 167, 0.35));
+}
+
+.forgot-env-flap {
+  transform-origin: 60px 28px;
+  animation: forgot-env-flap 2.4s ease-in-out infinite;
+}
+
+@keyframes forgot-env-flap {
+  0%,
+  100% {
+    transform: rotateX(0deg);
+  }
+  45% {
+    transform: rotateX(-14deg);
+  }
+  55% {
+    transform: rotateX(-14deg);
+  }
+}
+
+.forgot-success-title {
+  margin-top: 0;
+}
+
+.forgot-success-msg {
+  margin-bottom: 1.5rem;
+}

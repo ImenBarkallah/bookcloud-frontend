@@ -1,0 +1,10 @@
+<div class="ua" [class.sm]="size === 'sm'" [class.md]="size === 'md'" [class.lg]="size === 'lg'">
+  <img
+    *ngIf="photoURL && !imgError"
+    [src]="photoURL"
+    alt=""
+    referrerpolicy="no-referrer"
+    (error)="onImgError()"
+  />
+  <span *ngIf="!photoURL || imgError" class="ua-initials">{{ getInitials() }}</span>
+</div>

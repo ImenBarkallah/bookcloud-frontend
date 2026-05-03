@@ -1,0 +1,156 @@
+<div class="register-page">
+  <div class="register-canvas-layer" [class.hidden-three]="!useThree">
+    <div #canvasHost class="register-canvas-host"></div>
+  </div>
+  <div class="register-static-bg" *ngIf="!useThree"></div>
+
+  <div class="register-overlay">
+    <div class="register-card">
+      <div class="steps-row" aria-hidden="true">
+        <span class="step-pill" [class.active]="step >= 1">{{ 'REGISTER.STEP1' | translate }}</span>
+        <span class="step-pill" [class.active]="step >= 2">{{ 'REGISTER.STEP2' | translate }}</span>
+        <span class="step-pill" [class.active]="step >= 3">{{ 'REGISTER.STEP3' | translate }}</span>
+      </div>
+
+      <div class="panels-stack">
+        <!-- Step 1 -->
+        <div class="panel panel-one" [class.off]="step !== 1">
+          <h1>{{ 'REGISTER.TITLE' | translate }}</h1>
+          <p class="lead">{{ 'REGISTER.SUBTITLE' | translate }}</p>
+
+          <form [formGroup]="accountForm" (ngSubmit)="nextStep()">
+            <label class="field" appFieldMicroAnim [fieldControl]="accountForm.controls.fullName">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              </span>
+              <input formControlName="fullName" placeholder=" " [attr.aria-label]="'REGISTER.FULL_NAME' | translate" />
+              <span class="floating">{{ 'REGISTER.FULL_NAME' | translate }}</span>
+            </label>
+
+            <label class="field email-field" appFieldMicroAnim [fieldControl]="accountForm.controls.email">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+              </span>
+              <input formControlName="email" type="email" placeholder=" " [attr.aria-label]="'REGISTER.EMAIL_LABEL' | translate" />
+              <span class="floating">{{ 'REGISTER.EMAIL_LABEL' | translate }}</span>
+            </label>
+
+            <label class="field" appFieldMicroAnim [fieldControl]="accountForm.controls.password">
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"/></svg>
+              </span>
+              <input formControlName="password" type="password" placeholder=" " [attr.aria-label]="'REGISTER.PASSWORD_LABEL' | translate" />
+              <span class="floating">{{ 'REGISTER.PASSWORD_LABEL' | translate }}</span>
+            </label>
+
+            <div class="strength-meter" aria-live="polite">
+              <div class="str-bar">
+                <span class="str-seg"></span>
+                <span class="str-seg"></span>
+                <span class="str-seg"></span>
+                <span class="str-seg"></span>
+              </div>
+              <span class="str-label">{{ strengthLabelKey() | translate }}</span>
+            </div>
+
+            <label
+              class="field"
+              [class.shake]="confirmMismatch()"
+              appFieldMicroAnim
+              [fieldControl]="accountForm.controls.confirm"
+              [validWhen]="confirmAnimOk"
+            >
+              <span class="field-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2z"/></svg>
+              </span>
+              <input formControlName="confirm" type="password" placeholder=" " [attr.aria-label]="'REGISTER.CONFIRM_LABEL' | translate" />
+              <span class="floating">{{ 'REGISTER.CONFIRM_LABEL' | translate }}</span>
+              <span class="confirm-x" *ngIf="confirmMismatch()" aria-hidden="true">✕</span>
+            </label>
+
+            <button type="submit" class="btn-next">{{ 'REGISTER.NEXT_STEP' | translate }}</button>
+          </form>
+          <p class="register-alt-auth">
+            {{ 'REGISTER.HAVE_ACCOUNT' | translate }}
+            <a routerLink="/auth/login">{{ 'REGISTER.SIGN_IN_LINK' | translate }}</a>
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="panel panel-two" [class.off]="step !== 2">
+          <h2>{{ 'REGISTER.PROFILE_HEADING' | translate }}</h2>
+
+          <div class="avatar-row">
+            <label class="avatar-circle" [style.background-image]="avatarPreview ? 'url(' + avatarPreview + ')' : null">
+              <input type="file" accept="image/*" class="sr-only" (change)="onAvatar($event)" [attr.aria-label]="'REGISTER.AVATAR' | translate" />
+              <span class="cam-ico" *ngIf="!avatarPreview">
+                <svg viewBox="0 0 24 24" width="28" height="28"><path fill="currentColor" d="M12 15.5A3.5 3.5 0 109 12a3.5 3.5 0 003.5 3.5zm7.5-9h-2.5l-2-2h-6l-2 2H6c-1.38 0-2.5 1.12-2.5 2.5v9C3.5 19.88 4.62 21 6 21h12c1.38 0 2.5-1.12 2.5-2.5v-9c0-1.38-1.12-2.5-2.5-2.5z"/></svg>
+              </span>
+            </label>
+
+            <div class="profile-fields" [formGroup]="profileForm">
+              <label class="field" appFieldMicroAnim [fieldControl]="profileForm.controls.phone" [optionalField]="true">
+                <span class="field-icon" aria-hidden="true">
+                  <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2a1 1 0 011.01-.24c1.12.37 2.33.57 3.58.57a1 1 0 011 1V21a1 1 0 01-1 1C10.29 22 2 13.71 2 3a1 1 0 011-1h3.5a1 1 0 011 1c0 1.25.2 2.46.57 3.58a1 1 0 01-.24 1.01l-2.2 2.21z"/></svg>
+                </span>
+                <input formControlName="phone" type="tel" placeholder=" " [attr.aria-label]="'REGISTER.PHONE' | translate" />
+                <span class="floating">{{ 'REGISTER.PHONE' | translate }}</span>
+              </label>
+              <span class="role-pill">{{ 'REGISTER.ROLE_MEMBER' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="member-card-preview">
+            <div class="mc-inner">
+              <div class="mc-left">
+                <p class="mc-name">{{ accountForm.controls.fullName.value || '—' }}</p>
+                <p class="mc-id">{{ memberId }}</p>
+              </div>
+              <img *ngIf="qrDataUrl" class="qr-img" [src]="qrDataUrl" width="64" height="64" alt="" />
+            </div>
+          </div>
+
+          <button
+            type="button"
+            class="btn-submit-reg"
+            [disabled]="loading"
+            (click)="submitRegistration()"
+          >
+            <span *ngIf="!loading">{{ 'REGISTER.CREATE_ACCOUNT' | translate }}</span>
+            <span *ngIf="loading" class="spinner"></span>
+          </button>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="panel panel-three" [class.off]="step !== 3">
+          <svg class="success-check-svg" viewBox="0 0 64 64" aria-hidden="true">
+            <circle cx="32" cy="32" r="30" fill="none" stroke="rgba(255,255,255,0.15)" stroke-width="3" />
+            <path
+              #checkPath
+              class="success-path"
+              d="M18 34l10 10 18-22"
+              fill="none"
+              stroke="#2ecc71"
+              stroke-width="4"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+
+          <h2 class="success-title">{{ 'REGISTER.SUCCESS_TITLE' | translate }}</h2>
+          <p class="success-sub">{{ 'REGISTER.SUCCESS_SUB' | translate: { name: successName } }}</p>
+
+          <div class="rain-row" aria-hidden="true">
+            <span class="rain-book" *ngFor="let _ of rainDrops">📖</span>
+          </div>
+
+          <div class="timer-ring">
+            <span class="timer-num">{{ countdown }}</span>
+          </div>
+
+          <button type="button" class="success-cta" (click)="goDashboard()">{{ 'REGISTER.GO_DASHBOARD' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+<section class="categories-section">
+  <h2 class="section-title">{{ 'CATEGORIES.TITLE' | translate }}</h2>
+
+  <div class="categories-grid">
+    <div class="category-card" *ngFor="let c of categories">
+      <div class="category-inner" [style.background]="c.gradient">
+        <span class="cat-icon" [attr.data-icon]="c.icon" aria-hidden="true"></span>
+        <h3 class="cat-name">{{ c.nameKey | translate }}</h3>
+        <p class="cat-count">{{ 'CATEGORIES.COUNT' | translate: { count: (c.count | number) } }}</p>
+      </div>
+    </div>
+  </div>
+</section>

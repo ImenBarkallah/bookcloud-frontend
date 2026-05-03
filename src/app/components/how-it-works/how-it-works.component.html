@@ -1,0 +1,40 @@
+<section class="how-section">
+  <h2 class="how-title">{{ 'HOW.TITLE' | translate }}</h2>
+
+  <div class="timeline-svg-wrap" aria-hidden="true">
+    <svg class="timeline-svg" viewBox="0 0 900 120" preserveAspectRatio="none">
+      <defs>
+        <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color: #7b5ea7" />
+          <stop offset="100%" style="stop-color: #00d4ff" />
+        </linearGradient>
+      </defs>
+      <path
+        class="timeline-path"
+        d="M 60 60 L 300 60 L 450 60 L 600 60 L 840 60"
+        fill="none"
+        stroke="url(#lineGrad)"
+        stroke-width="3"
+        stroke-linecap="round"
+      />
+    </svg>
+  </div>
+
+  <div class="timeline-row">
+    <article class="timeline-step">
+      <div class="step-circle">1</div>
+      <h3>{{ 'HOW.STEP1_TITLE' | translate }}</h3>
+      <p>{{ 'HOW.STEP1_DESC' | translate }}</p>
+    </article>
+    <article class="timeline-step">
+      <div class="step-circle">2</div>
+      <h3>{{ 'HOW.STEP2_TITLE' | translate }}</h3>
+      <p>{{ 'HOW.STEP2_DESC' | translate }}</p>
+    </article>
+    <article class="timeline-step">
+      <div class="step-circle">3</div>
+      <h3>{{ 'HOW.STEP3_TITLE' | translate }}</h3>
+      <p>{{ 'HOW.STEP3_DESC' | translate }}</p>
+    </article>
+  </div>
+</section>

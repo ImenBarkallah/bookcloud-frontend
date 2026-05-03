@@ -1,0 +1,19 @@
+<section class="hero-wrap">
+  <div class="three-layer" [class.three-hidden]="!useThree">
+    <div #canvasHost class="canvas-host"></div>
+  </div>
+  <div class="hero-fallback" *ngIf="!useThree"></div>
+
+  <div class="hero-overlay">
+    <span class="hero-badge">{{ 'HOME.BADGE' | translate }}</span>
+    <h1 class="hero-title">
+      <span class="hero-title-line">{{ 'HOME.TITLE_LINE1' | translate }}</span>
+      <span class="hero-title-line hero-gradient">{{ 'HOME.TITLE_LINE2' | translate }}</span>
+    </h1>
+    <p class="hero-sub">{{ 'HOME.SUBTITLE' | translate }}</p>
+    <div class="hero-cta-group">
+      <a routerLink="/catalogue" class="btn-solid">{{ 'HOME.CTA_EXPLORE' | translate }}</a>
+      <a routerLink="/auth/login" class="btn-ghost">{{ 'HOME.CTA_SIGNIN' | translate }}</a>
+    </div>
+  </div>
+</section>

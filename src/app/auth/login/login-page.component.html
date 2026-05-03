@@ -1,0 +1,173 @@
+<div class="login-page">
+  <div class="login-canvas-layer" [class.hidden-three]="!useThree">
+    <div #canvasHost class="login-canvas-host"></div>
+  </div>
+  <div class="login-static-bg" *ngIf="!useThree"></div>
+
+  <div class="login-overlay">
+    <div class="login-card">
+      <div class="login-book-icon" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="48" height="48">
+          <path fill="currentColor" d="M12 8h12v32H12c-2 0-4-2-4-4V12c0-2 2-4 4-4zm18 0h10v32H30V8zm-14 6v20l8-4 8 4V14H16z" class="book-pages"/>
+        </svg>
+      </div>
+
+      <div class="login-title-block">
+        <h1 class="t1">{{ 'LOGIN.TITLE' | translate }}</h1>
+        <p class="t2">{{ 'LOGIN.SUBTITLE' | translate }}</p>
+      </div>
+
+      <button type="button" class="btn-google" (click)="google()">
+        <svg class="g-icon" viewBox="0 0 24 24" aria-hidden="true">
+          <path fill="#fff" d="M21 12a9 9 0 11-9-9c2.4 0 4.6.9 6.3 2.4l-2.6 2.5A5.3 5.3 0 1019 12h3z"/>
+        </svg>
+        {{ 'LOGIN.GOOGLE' | translate }}
+      </button>
+
+      <div class="divider"><span>{{ 'LOGIN.OR' | translate }}</span></div>
+
+      <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate autocomplete="on">
+        <label
+          class="field field-email"
+          [class.invalid]="loginForm.controls.email.invalid && loginForm.controls.email.touched"
+          appFieldMicroAnim
+          [fieldControl]="loginForm.controls.email"
+        >
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+          </span>
+          <input
+            #emailInput
+            type="email"
+            formControlName="email"
+            placeholder=" "
+            [attr.aria-label]="'LOGIN.EMAIL_LABEL' | translate"
+            (focus)="emailFocused = true"
+            (blur)="emailFocused = false"
+          />
+          <span class="floating">{{ 'LOGIN.EMAIL_LABEL' | translate }}</span>
+        </label>
+
+        <label
+          class="field field-password"
+          [class.invalid]="loginForm.controls.password.invalid && loginForm.controls.password.touched"
+          appFieldMicroAnim
+          [fieldControl]="loginForm.controls.password"
+        >
+          <span class="field-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path fill="currentColor" d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6z"/></svg>
+          </span>
+          <input
+            #pwdInput
+            [type]="showPassword ? 'text' : 'password'"
+            formControlName="password"
+            placeholder=" "
+            [attr.aria-label]="'LOGIN.PASSWORD_LABEL' | translate"
+            (focus)="pwdFocused = true"
+            (blur)="pwdFocused = false"
+          />
+          <span class="floating">{{ 'LOGIN.PASSWORD_LABEL' | translate }}</span>
+          <button type="button" class="eye-toggle" (click)="togglePwdVisibility()" [attr.aria-label]="'LOGIN.TOGGLE_PASSWORD' | translate">
+            <svg viewBox="0 0 24 24" width="22" height="22"><path fill="currentColor" d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/></svg>
+          </button>
+        </label>
+
+        <div class="login-meta-row">
+          <label class="remember">
+            <input type="checkbox" formControlName="remember" />
+            <span class="chk-ui"></span>
+            {{ 'LOGIN.REMEMBER_ME' | translate }}
+          </label>
+          <button type="button" class="forgot" (click)="openForgotModal()">{{ 'LOGIN.FORGOT_PASSWORD' | translate }}</button>
+        </div>
+
+        <button
+          #submitBtn
+          type="submit"
+          class="btn-submit"
+          [disabled]="loading"
+          (mousedown)="ripple($event)"
+        >
+          <span *ngIf="!loading" class="btn-label">{{ 'LOGIN.SUBMIT' | translate }}</span>
+          <span *ngIf="loading" class="spinner" aria-hidden="true"></span>
+        </button>
+      </form>
+
+      <p class="login-footer-link">
+        {{ 'LOGIN.NO_ACCOUNT' | translate }}
+        <a routerLink="/auth/register">{{ 'LOGIN.SIGN_UP_LINK' | translate }}</a>
+      </p>
+    </div>
+  </div>
+
+  <!-- Forgot password: glass overlay + bottom sheet -->
+  <div
+    *ngIf="forgotModalOpen"
+    class="forgot-reset-root"
+    role="dialog"
+    aria-modal="true"
+    [attr.aria-labelledby]="forgotSuccess ? 'forgot-success-heading' : 'forgot-dialog-title'"
+  >
+    <button
+      type="button"
+      class="forgot-reset-backdrop"
+      (click)="closeForgotModal()"
+      [attr.aria-label]="'LOGIN.FORGOT_CLOSE' | translate"
+    ></button>
+    <div #forgotSheet class="forgot-reset-sheet">
+      <div class="forgot-sheet-handle" aria-hidden="true"></div>
+      <button type="button" class="forgot-sheet-close" (click)="closeForgotModal()" [attr.aria-label]="'LOGIN.FORGOT_CLOSE' | translate">
+        <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path fill="currentColor" d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+      </button>
+
+      <ng-container *ngIf="!forgotSuccess">
+        <h2 id="forgot-dialog-title" class="forgot-sheet-title">{{ 'LOGIN.FORGOT_MODAL_TITLE' | translate }}</h2>
+        <p class="forgot-sheet-sub">{{ 'LOGIN.FORGOT_MODAL_SUB' | translate }}</p>
+        <form [formGroup]="forgotEmailForm" (ngSubmit)="submitForgotReset()" novalidate>
+          <label
+            class="field field-email forgot-field"
+            [class.invalid]="forgotEmailForm.controls.email.invalid && forgotEmailForm.controls.email.touched"
+            appFieldMicroAnim
+            [fieldControl]="forgotEmailForm.controls.email"
+          >
+            <span class="field-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24"><path fill="currentColor" d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+            </span>
+            <input
+              #forgotEmailInput
+              type="email"
+              formControlName="email"
+              placeholder=" "
+              [attr.aria-label]="'LOGIN.EMAIL_LABEL' | translate"
+              autocomplete="email"
+            />
+            <span class="floating">{{ 'LOGIN.EMAIL_LABEL' | translate }}</span>
+          </label>
+          <button type="submit" class="btn-submit forgot-submit" [disabled]="forgotLoading">
+            <span *ngIf="!forgotLoading" class="btn-label">{{ 'LOGIN.FORGOT_SEND' | translate }}</span>
+            <span *ngIf="forgotLoading" class="spinner" aria-hidden="true"></span>
+          </button>
+        </form>
+      </ng-container>
+
+      <div *ngIf="forgotSuccess" class="forgot-success-block">
+        <div #forgotEnvelope class="forgot-envelope-wrap" aria-hidden="true">
+          <svg class="forgot-envelope-svg" viewBox="0 0 120 88" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="envGrad" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#7b5ea7"/>
+                <stop offset="100%" stop-color="#00d4ff"/>
+              </linearGradient>
+            </defs>
+            <rect x="8" y="28" width="104" height="52" rx="6" stroke="url(#envGrad)" stroke-width="2.5" fill="rgba(123,94,167,0.12)"/>
+            <path class="forgot-env-flap" d="M8 28 L60 58 L112 28" stroke="url(#envGrad)" stroke-width="2.5" stroke-linejoin="round" fill="rgba(0,212,255,0.08)"/>
+            <path d="M8 28 L60 52 L112 28" stroke="url(#envGrad)" stroke-width="1.5" opacity="0.5" fill="none"/>
+          </svg>
+        </div>
+        <h2 id="forgot-success-heading" class="forgot-sheet-title forgot-success-title">{{ 'LOGIN.FORGOT_SUCCESS_TITLE' | translate }}</h2>
+        <p class="forgot-sheet-sub forgot-success-msg">{{ 'LOGIN.FORGOT_SUCCESS_MESSAGE' | translate }}</p>
+        <button type="button" class="btn-submit" (click)="closeForgotModal()">{{ 'LOGIN.FORGOT_BACK' | translate }}</button>
+      </div>
+    </div>
+  </div>
+</div>

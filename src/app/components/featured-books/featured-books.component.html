@@ -1,0 +1,27 @@
+<section class="featured-section">
+  <h2 class="featured-heading">
+    <span>{{ 'FEATURED.TITLE' | translate }}</span>
+  </h2>
+
+  <div class="featured-scroll">
+    <div class="featured-track">
+      <article class="book-card" *ngFor="let b of books">
+        <div class="cover" [style.background]="b.gradient"></div>
+        <div class="card-body">
+          <h3 class="book-title">{{ b.titleKey | translate }}</h3>
+          <p class="book-meta">
+            <span>{{ 'FEATURED.AUTHOR' | translate }}:</span>
+            {{ b.authorKey | translate }}
+          </p>
+          <span class="cat-badge">{{ b.categoryKey | translate }}</span>
+          <div class="stars" aria-hidden="true">
+            <span *ngFor="let i of starIndexes()" class="star" [class.filled]="i < b.rating">★</span>
+          </div>
+          <span class="pill" [class.pill-ok]="b.available" [class.pill-no]="!b.available">
+            {{ (b.available ? 'FEATURED.AVAILABLE' : 'FEATURED.BORROWED') | translate }}
+          </span>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>

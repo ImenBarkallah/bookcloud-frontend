@@ -1,0 +1,135 @@
+.site-footer {
+  margin-top: 4rem;
+  padding: 3rem 1.25rem 2rem;
+  border-top: 2px solid transparent;
+  border-image: linear-gradient(90deg, var(--color-accent), var(--color-cyan)) 1;
+  background: linear-gradient(180deg, rgba(10, 10, 15, 0.9), #050508);
+}
+
+.footer-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .footer-inner {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .footer-inner {
+    grid-template-columns: 1.2fr 1fr 1fr 1fr;
+  }
+}
+
+.footer-logo {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 1.35rem;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+
+.footer-brand p {
+  margin: 0.75rem 0 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+  line-height: 1.5;
+}
+
+.footer-col h4 {
+  font-family: var(--font-heading);
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.75);
+  margin: 0 0 1rem;
+}
+
+.footer-col a {
+  display: block;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+  transition: color 0.2s ease;
+}
+
+.footer-col a:hover {
+  color: var(--color-cyan);
+}
+
+.footer-col p {
+  margin: 0 0 0.35rem;
+  font-size: 0.88rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.social {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-col .social-btn {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 0;
+  border-radius: 10px;
+  background: var(--color-glass);
+  border: 1px solid var(--color-border);
+  color: #fff;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.footer-col .social-btn .social-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+
+.footer-col .social-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(123, 94, 167, 0.35);
+}
+
+.lang-switch-footer {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+}
+
+.lang-switch-footer button {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  cursor: pointer;
+  padding: 0;
+  font: inherit;
+}
+
+.lang-switch-footer button:hover {
+  color: var(--color-cyan);
+}
+
+.sep {
+  opacity: 0.35;
+}
+
+.copyright {
+  text-align: center;
+  margin: 2.5rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.35);
+}

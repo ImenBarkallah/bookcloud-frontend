@@ -1,0 +1,19 @@
+/* Shared by login/register for appFieldMicroAnim */
+.field {
+  position: relative;
+}
+
+.field .field-micro-check-svg {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.field.field-micro-has-eye .field-micro-check-svg {
+  right: 46px;
+}
