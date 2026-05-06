@@ -1,6 +1,6 @@
 export const environment = {
   production: false,
-  apiBaseUrl: 'http://localhost:8080',
+  apiBaseUrl: 'https://0e7e-41-62-79-58.ngrok-free.app',
   firebase: {
     apiKey: 'AIzaSyDhlkLcDRI9P4hguBSPuaVAsfwTLzVcwk4',
     authDomain: 'bookcloud-83374.firebaseapp.com',

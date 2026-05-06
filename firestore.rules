@@ -1,0 +1,117 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isSelf(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    // Rôle lu depuis Firestore (document users/{uid})
+    function role() {
+      return signedIn()
+        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role
+        : null;
+    }
+
+    function isAdmin() {
+      return role() == "ADMIN";
+    }
+
+    function isStaff() {
+      return isAdmin() || role() == "BIBLIOTHÉCAIRE";
+    }
+
+    // -------------------------
+    // PUBLIC (catalogue vitrine)
+    // -------------------------
+    match /authors/{id} { allow read: if true; }
+    match /books/{id} { allow read: if true; }
+    match /categories/{id} { allow read: if true; }
+    match /announcements/{id} { allow read: if true; }
+    match /testimonials/{id} { allow read: if true; }
+
+    // -------------------------
+    // USERS (profil)
+    // -------------------------
+    match /users/{uid} {
+      // Lire son profil
+      allow read: if isSelf(uid) || isStaff();
+
+      // Créer son profil (si absent)
+      allow create: if isSelf(uid);
+
+      // Modifier son profil MAIS pas son rôle
+      allow update: if isSelf(uid)
+        && request.resource.data.role == resource.data.role;
+
+      // Staff/admin peuvent modifier le profil (et le rôle si besoin)
+      allow update: if isStaff();
+
+      // Suppression: seulement admin (optionnel)
+      allow delete: if isAdmin();
+
+      // Notifications privées
+      match /notifications/{nid} {
+        allow read, write: if isSelf(uid) || isStaff();
+      }
+    }
+
+    // -------------------------
+    // ROLES config (optionnel)
+    // -------------------------
+    match /roles/{roleId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // -------------------------
+    // STAFF ASSIGNMENTS
+    // -------------------------
+    match /staffAssignments/{id} {
+      allow read, write: if isStaff();
+    }
+
+    // -------------------------
+    // OPERATIONS (privées)
+    // -------------------------
+    match /loans/{id} {
+      allow read: if isStaff() || (signedIn() && resource.data.userUid == request.auth.uid);
+      allow write: if isStaff();
+    }
+
+    match /reservations/{id} {
+      allow read: if isStaff() || (signedIn() && resource.data.userUid == request.auth.uid);
+      allow write: if isStaff();
+    }
+
+    match /fines/{id} {
+      allow read: if isStaff() || (signedIn() && resource.data.userUid == request.auth.uid);
+      allow write: if isStaff();
+    }
+
+    match /libraryHistory/{id} {
+      allow read: if isStaff() || (signedIn() && resource.data.userUid == request.auth.uid);
+      allow write: if isStaff();
+    }
+
+    match /transactions/{id} {
+      allow read: if isStaff() || (signedIn() && resource.data.userUid == request.auth.uid);
+      allow write: if isStaff();
+    }
+
+    // Branches (si tu veux visibles aux utilisateurs connectés)
+    match /libraryBranches/{id} {
+      allow read: if signedIn();
+      allow write: if isAdmin();
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
