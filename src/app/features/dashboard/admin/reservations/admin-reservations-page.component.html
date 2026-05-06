@@ -1,0 +1,320 @@
+<section class="admin-layout admin-reservations">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" [page]="'ADMIN.RESERVATIONS.PAGE_TITLE' | translate" />
+
+    <div class="admin-scroll">
+      <app-admin-page-head
+        badge="ADMIN"
+        [title]="'ADMIN.RESERVATIONS.PAGE_TITLE' | translate"
+        [subtitle]="'ADMIN.RESERVATIONS.PAGE_SUB' | translate"
+      />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">{{ 'ADMIN.RESERVATIONS.LOADING' | translate }}</div>
+        <div class="state err" *ngIf="error">{{ 'ADMIN.RESERVATIONS.LOAD_ERR' | translate }}</div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input
+                [ngModel]="q"
+                (ngModelChange)="onQueryChange($event)"
+                type="text"
+                [placeholder]="'ADMIN.RESERVATIONS.SEARCH_PH' | translate"
+              />
+            </div>
+            <div class="count">
+              <span class="chip">{{ filtered.length }}</span>
+              <span class="muted">{{ 'ADMIN.RESERVATIONS.SHOWN' | translate }}</span>
+              <span class="muted">· {{ all.length }} {{ 'ADMIN.RESERVATIONS.TOTAL_SHORT' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="tool-right">
+            <div class="filters" role="group" [attr.aria-label]="'ADMIN.RESERVATIONS.FILTER_ARIA' | translate">
+              <button type="button" class="pill-btn" [class.on]="statusFilter === 'ALL'" (click)="setStatusFilter('ALL')">
+                {{ 'ADMIN.RESERVATIONS.F_ALL' | translate }}
+              </button>
+              <button type="button" class="pill-btn" [class.on]="statusFilter === 'PENDING'" (click)="setStatusFilter('PENDING')">
+                {{ 'ADMIN.RESERVATIONS.F_PENDING' | translate }}
+              </button>
+              <button type="button" class="pill-btn" [class.on]="statusFilter === 'APPROVED'" (click)="setStatusFilter('APPROVED')">
+                {{ 'ADMIN.RESERVATIONS.F_APPROVED' | translate }}
+              </button>
+              <button type="button" class="pill-btn pill-btn--warn" [class.on]="statusFilter === 'CANCELLED'" (click)="setStatusFilter('CANCELLED')">
+                {{ 'ADMIN.RESERVATIONS.F_CANCELLED' | translate }}
+              </button>
+              <button type="button" class="pill-btn pill-btn--warn" [class.on]="statusFilter === 'EXPIRED'" (click)="setStatusFilter('EXPIRED')">
+                {{ 'ADMIN.RESERVATIONS.F_EXPIRED' | translate }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && !error">
+          <p class="empty" *ngIf="filtered.length === 0">{{ 'ADMIN.RESERVATIONS.EMPTY' | translate }}</p>
+
+          <div class="kanban" *ngIf="filtered.length">
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--amber">
+                <span>🟡</span> {{ 'ADMIN.RESERVATIONS.COL_PENDING' | translate }}
+                <span class="kan-count">{{ col('PENDING').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let r of col('PENDING'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="r.coverUrl" [src]="r.coverUrl" [alt]="bookTitle(r)" loading="lazy" />
+                    <div *ngIf="!r.coverUrl" class="kan-ph">📌</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <div class="kan-title">{{ bookTitle(r) }}</div>
+                    <div class="kan-user">{{ userLabel(r) }}</div>
+                    <div class="kan-meta muted">
+                      {{ 'ADMIN.RESERVATIONS.POS' | translate }} {{ r.queuePosition ?? '—' }} ·
+                      {{ r.reservedAt | date : 'short' }}
+                    </div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      *ngIf="canApprove(r)"
+                      [disabled]="isPending(r.id)"
+                      (click)="approve(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_APPROVE' | translate"
+                    >
+                      <app-hero-icon name="check" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost danger ghost--ico"
+                      *ngIf="canReject(r)"
+                      [disabled]="isPending(r.id)"
+                      (click)="reject(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_REJECT' | translate"
+                    >
+                      <app-hero-icon name="x-mark" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(r.id)"
+                      (click)="openDetail(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="col('PENDING').length === 0">{{ 'ADMIN.RESERVATIONS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--green">
+                <span>🟢</span> {{ 'ADMIN.RESERVATIONS.COL_APPROVED' | translate }}
+                <span class="kan-count">{{ col('APPROVED').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let r of col('APPROVED'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="r.coverUrl" [src]="r.coverUrl" [alt]="bookTitle(r)" loading="lazy" />
+                    <div *ngIf="!r.coverUrl" class="kan-ph">📌</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <div class="kan-title">{{ bookTitle(r) }}</div>
+                    <div class="kan-user">{{ userLabel(r) }}</div>
+                    <div class="kan-meta muted">
+                      {{ 'ADMIN.RESERVATIONS.POS' | translate }} {{ r.queuePosition ?? '—' }} ·
+                      {{ r.reservedAt | date : 'short' }}
+                    </div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      *ngIf="canConvert(r)"
+                      [disabled]="isPending(r.id)"
+                      (click)="convert(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_CONVERT' | translate"
+                    >
+                      <app-hero-icon name="plus" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost danger ghost--ico"
+                      *ngIf="canReject(r)"
+                      [disabled]="isPending(r.id)"
+                      (click)="reject(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_REJECT' | translate"
+                    >
+                      <app-hero-icon name="x-mark" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(r.id)"
+                      (click)="openDetail(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="col('APPROVED').length === 0">{{ 'ADMIN.RESERVATIONS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--red">
+                <span>🔴</span> {{ 'ADMIN.RESERVATIONS.COL_CANCELLED' | translate }}
+                <span class="kan-count">{{ col('CANCELLED').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let r of col('CANCELLED'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="r.coverUrl" [src]="r.coverUrl" [alt]="bookTitle(r)" loading="lazy" />
+                    <div *ngIf="!r.coverUrl" class="kan-ph">📌</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <div class="kan-title">{{ bookTitle(r) }}</div>
+                    <div class="kan-user">{{ userLabel(r) }}</div>
+                    <div class="kan-meta muted">{{ r.reservedAt | date : 'short' }}</div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(r.id)"
+                      (click)="openDetail(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="col('CANCELLED').length === 0">{{ 'ADMIN.RESERVATIONS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--gray">
+                <span>⏰</span> {{ 'ADMIN.RESERVATIONS.COL_EXPIRED' | translate }}
+                <span class="kan-count">{{ col('EXPIRED').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let r of col('EXPIRED'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="r.coverUrl" [src]="r.coverUrl" [alt]="bookTitle(r)" loading="lazy" />
+                    <div *ngIf="!r.coverUrl" class="kan-ph">📌</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <div class="kan-title">{{ bookTitle(r) }}</div>
+                    <div class="kan-user">{{ userLabel(r) }}</div>
+                    <div class="kan-meta muted">
+                      {{ 'ADMIN.RESERVATIONS.EXPIRES' | translate }} {{ r.expiresAt | date : 'short' }}
+                    </div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(r.id)"
+                      (click)="openDetail(r)"
+                      [title]="'ADMIN.RESERVATIONS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="col('EXPIRED').length === 0">{{ 'ADMIN.RESERVATIONS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Détail -->
+<div class="modal-backdrop" *ngIf="detailModalOpen" (click)="closeDetail()" aria-hidden="true"></div>
+<div class="modal" *ngIf="detailModalOpen" role="dialog" aria-modal="true" [attr.aria-label]="'ADMIN.RESERVATIONS.DETAIL_TITLE' | translate">
+  <div class="modal-card glass modal-card--wide" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <span class="chip">ADMIN</span>
+        <strong>{{ 'ADMIN.RESERVATIONS.DETAIL_TITLE' | translate }}</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDetail()" [title]="'ADMIN.RESERVATIONS.CLOSE' | translate">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body detail-body">
+      <div class="state" *ngIf="detailLoading">{{ 'ADMIN.RESERVATIONS.LOADING' | translate }}</div>
+      <div class="state err" *ngIf="detailError && !detailLoading">{{ 'ADMIN.RESERVATIONS.DETAIL_ERR' | translate }}</div>
+
+      <ng-container *ngIf="!detailLoading && !detailError">
+        <ng-container *ngIf="detail as d">
+          <section class="glass-soft">
+            <div class="detail-head">
+              <div class="thumb lg" *ngIf="d.coverUrl">
+                <img [src]="d.coverUrl" [alt]="bookTitle(d)" />
+              </div>
+              <div class="thumb lg thumb--ph" *ngIf="!d.coverUrl">📌</div>
+              <div class="detail-meta">
+                <div class="detail-title">{{ bookTitle(d) }}</div>
+                <div class="muted" *ngIf="d.bookAuthor">{{ d.bookAuthor }}</div>
+                <div class="muted small">{{ userLabel(d) }}</div>
+                <div class="pill" [ngClass]="'st-' + normStatus(d).toLowerCase()">
+                  {{ statusLabelKey(d) | translate }}
+                </div>
+              </div>
+            </div>
+            <dl class="detail-dl">
+              <dt>{{ 'ADMIN.RESERVATIONS.RESERVED_AT' | translate }}</dt>
+              <dd>{{ d.reservedAt | date : 'medium' }}</dd>
+              <dt>{{ 'ADMIN.RESERVATIONS.EXPIRES_AT' | translate }}</dt>
+              <dd>{{ d.expiresAt ? (d.expiresAt | date : 'medium') : '—' }}</dd>
+              <dt>{{ 'ADMIN.RESERVATIONS.POS' | translate }}</dt>
+              <dd>{{ d.queuePosition ?? '—' }}</dd>
+              <dt>{{ 'ADMIN.RESERVATIONS.USER_UID' | translate }}</dt>
+              <dd class="mono">{{ d.userUid }}</dd>
+            </dl>
+          </section>
+
+          <section class="history-block glass-soft">
+            <h3 class="detail-h">{{ 'ADMIN.RESERVATIONS.DETAIL_HISTORY' | translate }}</h3>
+            <ul class="history-list" *ngIf="d.history.length; else noHist">
+              <li *ngFor="let h of d.history">
+                <span class="history-type">{{ h.type }}</span>
+                <span class="history-time muted">{{ h.occurredAt | date : 'medium' }}</span>
+                <div class="history-sum">{{ h.summary }}</div>
+              </li>
+            </ul>
+            <ng-template #noHist>
+              <p class="muted">{{ 'ADMIN.RESERVATIONS.HISTORY_EMPTY' | translate }}</p>
+            </ng-template>
+          </section>
+
+          <footer class="detail-foot">
+            <button type="button" class="ghost" *ngIf="canApprove(d)" [disabled]="isPending(d.id)" (click)="approveFromDetail()">
+              {{ 'ADMIN.RESERVATIONS.ACTION_APPROVE' | translate }}
+            </button>
+            <button type="button" class="ghost" *ngIf="canConvert(d)" [disabled]="isPending(d.id)" (click)="convertFromDetail()">
+              {{ 'ADMIN.RESERVATIONS.ACTION_CONVERT' | translate }}
+            </button>
+            <button type="button" class="ghost danger" *ngIf="canReject(d)" [disabled]="isPending(d.id)" (click)="rejectFromDetail()">
+              {{ 'ADMIN.RESERVATIONS.ACTION_REJECT' | translate }}
+            </button>
+          </footer>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</div>
+

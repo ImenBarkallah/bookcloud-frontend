@@ -1,0 +1,77 @@
+<section class="testimonials-section home-section">
+  <div class="stars-canvas-wrap">
+    <canvas class="stars-canvas" height="120" aria-hidden="true"></canvas>
+  </div>
+
+  <div class="testimonial-header">
+    <span class="section-badge">{{ 'HOME.TESTIMONIALS.BADGE' | translate }}</span>
+    <h2 class="section-title">{{ 'HOME.TESTIMONIALS.TITLE' | translate }}</h2>
+    <p class="section-subtitle testimonials-sub-split">{{ 'HOME.TESTIMONIALS.SUBTITLE' | translate }}</p>
+  </div>
+
+  <div class="featured-testimonial" *ngIf="activeTestimonial() as ft">
+    <div class="quote-marks quote-flair" aria-hidden="true">“</div>
+    <p class="feat-quote">{{ ft.quote }}</p>
+    <div class="featured-stars" aria-label="rating">
+      <span class="star" *ngFor="let _ of starIndexes(); let i = index" [class.filled]="ratingFill(ft.rating ?? 5, i)">★</span>
+    </div>
+    <div class="feat-person">
+      <div class="avatar">{{ ft.name.charAt(0) }}</div>
+      <div>
+        <div class="feat-name">{{ ft.name }}</div>
+        <div class="feat-role">{{ ft.role }}</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="thumbs-wrap" *ngIf="allItems.length > 1">
+    <p class="thumbs-hint">{{ 'HOME.TESTIMONIALS.PICK' | translate }}</p>
+    <div class="thumbs-carousel">
+      <button
+        type="button"
+        class="thumb-nav thumb-nav-prev"
+        (click)="thumbNav(-1)"
+        [attr.aria-label]="'HOME.TESTIMONIALS.PREV' | translate"
+      >
+        <span aria-hidden="true">‹</span>
+      </button>
+
+      <div class="thumbs-viewport" #thumbViewport>
+        <div class="thumbs-track">
+          <ng-container *ngFor="let _ of thumbDupCycles">
+            <button
+              type="button"
+              class="thumb-card"
+              *ngFor="let t of allItems"
+              [class.active]="t.id === selectedId"
+              [attr.aria-selected]="t.id === selectedId"
+              role="tab"
+              (click)="selectTestimonial(t)"
+            >
+              <div class="thumb-stars">
+                <span *ngFor="let __ of starIndexes(); let i = index" [class.on]="ratingFill(t.rating ?? 5, i)">★</span>
+              </div>
+              <p class="thumb-quote">“{{ t.quote }}</p>
+              <div class="thumb-foot">
+                <div class="avatar sm">{{ t.name.charAt(0) }}</div>
+                <div class="thumb-meta">
+                  <span class="thumb-name">{{ t.name }}</span>
+                  <span class="thumb-role">{{ t.role }}</span>
+                </div>
+              </div>
+            </button>
+          </ng-container>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        class="thumb-nav thumb-nav-next"
+        (click)="thumbNav(1)"
+        [attr.aria-label]="'HOME.TESTIMONIALS.NEXT' | translate"
+      >
+        <span aria-hidden="true">›</span>
+      </button>
+    </div>
+  </div>
+</section>

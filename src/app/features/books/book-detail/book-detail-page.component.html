@@ -1,0 +1,62 @@
+<div class="detail-page" *ngIf="!loading || book">
+  <nav class="crumb">
+    <a routerLink="/catalogue">{{ 'CATALOGUE.BREADCRUMB_HOME' | translate }}</a>
+    <span class="sep">/</span>
+    <a routerLink="/catalogue">{{ 'NAV.CATALOGUE' | translate }}</a>
+    <span class="sep">/</span>
+    <span *ngIf="book">{{ book.title }}</span>
+  </nav>
+
+  <div class="loading-block" *ngIf="loading">{{ 'PUBLIC.LOADING' | translate }}</div>
+
+  <ng-container *ngIf="book as b">
+    <div class="hero-grid">
+      <div class="cover-col">
+        <img *ngIf="coverUrl(b) as src" [src]="src" class="cover" alt="" />
+        <div *ngIf="!coverUrl(b)" class="cover ph"></div>
+      </div>
+      <div class="info-col">
+        <h1>{{ b.title }}</h1>
+        <p class="author">{{ b.author }}</p>
+        <p class="avail">
+          <span class="pill" [class.ok]="b.availableCopies > 0">{{
+            b.availableCopies > 0 ? ('CATALOGUE.IN_STOCK' | translate) : ('CATALOGUE.OUT_STOCK' | translate)
+          }}</span>
+        </p>
+
+        <div class="detail-grid">
+          <div><span class="lab">ISBN</span>{{ b.isbn || '—' }}</div>
+          <div><span class="lab">{{ 'CATALOGUE.SORT_YEAR' | translate }}</span>{{ b.publicationYear ?? '—' }}</div>
+          <div><span class="lab">{{ 'CATALOGUE.DRAWER_DETAILS' | translate }}</span>{{ b.publisher || '—' }}</div>
+          <div><span class="lab">{{ 'CATALOGUE.LANGUAGE' | translate }}</span>{{ b.language || '—' }}</div>
+        </div>
+
+        <p class="hint-guest" *ngIf="!loggedIn">{{ 'PUBLIC.GUEST_ACTIONS_HINT' | translate }}</p>
+
+        <div class="actions">
+          <button type="button" class="btn primary" [disabled]="borrowBusy || b.availableCopies <= 0" (click)="borrow()">
+            <span *ngIf="loggedIn">{{ 'CATALOGUE.BORROW' | translate }}</span>
+            <span *ngIf="!loggedIn">{{ 'PUBLIC.SIGN_IN_TO_BORROW' | translate }}</span>
+          </button>
+          <button type="button" class="btn secondary" [disabled]="reserveBusy || b.availableCopies > 0" (click)="reserve()">
+            <span *ngIf="loggedIn">{{ 'CATALOGUE.DRAWER_RESERVE' | translate }}</span>
+            <span *ngIf="!loggedIn">{{ 'PUBLIC.SIGN_IN_TO_RESERVE' | translate }}</span>
+          </button>
+          <a routerLink="/loans" class="btn ghost" *ngIf="loggedIn">{{ 'PUBLIC.MY_HISTORY_HINT' | translate }}</a>
+        </div>
+      </div>
+    </div>
+
+    <section class="similar" *ngIf="similar.length">
+      <h2>{{ 'CATALOGUE.DRAWER_SIMILAR' | translate }}</h2>
+      <div class="similar-row">
+        <a *ngFor="let s of similar; trackBy: trackSimilar" class="mini glass" [routerLink]="['/books', s.id]">
+          <span class="mini-title">{{ s.title }}</span>
+          <span class="mini-auth">{{ s.author }}</span>
+        </a>
+      </div>
+    </section>
+  </ng-container>
+
+  <p class="not-found" *ngIf="notFound && !loading">{{ 'PUBLIC.BOOK_NOT_FOUND' | translate }}</p>
+</div>

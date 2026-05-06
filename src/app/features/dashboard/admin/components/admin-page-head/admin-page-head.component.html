@@ -1,0 +1,18 @@
+<div class="page-head">
+  <div class="head-left">
+    <span class="pill">{{ badge }}</span>
+    <h1 class="admin-title">{{ title }}</h1>
+    <p class="admin-sub">{{ subtitle }}</p>
+  </div>
+  <div class="head-right">
+    <div class="live">
+      <span class="dot"></span>
+      <span>{{ liveLabel }}</span>
+    </div>
+  </div>
+
+  <ng-content />
+
+  <div class="head-glow" aria-hidden="true"></div>
+</div>
+

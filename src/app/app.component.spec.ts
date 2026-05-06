@@ -6,7 +6,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { of } from 'rxjs';
 
 import { AppComponent } from './app.component';
-import { BackendApiService } from './services/backend-api.service';
+import { BackendApiService } from './features/system/services/backend-api.service';
 
 describe('AppComponent', () => {
   beforeEach(() =>

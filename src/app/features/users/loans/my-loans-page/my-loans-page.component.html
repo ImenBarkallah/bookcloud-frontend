@@ -1,0 +1,118 @@
+<section class="loans-root">
+  <canvas #bgCanvas class="loans-canvas" aria-hidden="true"></canvas>
+
+  <div class="loans-inner">
+    <header class="loans-head" data-loans-head>
+      <span class="loans-badge">{{ 'LOANS.BADGE' | translate }}</span>
+      <h1 class="loans-title">{{ 'LOANS.TITLE' | translate }}</h1>
+      <p class="loans-sub">{{ 'LOANS.SUBTITLE' | translate }}</p>
+
+      <div class="loans-tabs" role="tablist">
+        <button
+          type="button"
+          role="tab"
+          class="loans-tab"
+          [class.active]="tab() === 'active'"
+          (click)="setTab('active')"
+        >
+          {{ 'LOANS.TAB_ACTIVE' | translate }}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          class="loans-tab"
+          [class.active]="tab() === 'history'"
+          (click)="setTab('history')"
+        >
+          {{ 'LOANS.TAB_HISTORY' | translate }}
+        </button>
+      </div>
+    </header>
+
+    <div *ngIf="error()" class="loans-msg loans-msg--error" role="alert">{{ 'LOANS.LOAD_ERROR' | translate }}</div>
+
+    <div *ngIf="!error() && loading()" class="loans-grid" aria-busy="true">
+      <div *ngFor="let x of skelSlots" class="loans-skel"></div>
+    </div>
+
+    <div *ngIf="!error() && !loading() && isEmpty()" class="loans-empty">
+      <p>{{ tab() === 'active' ? ('LOANS.EMPTY_ACTIVE' | translate) : ('LOANS.EMPTY_HISTORY' | translate) }}</p>
+      <a routerLink="/catalogue" class="loans-link">{{ 'LOANS.CTA_CATALOGUE' | translate }}</a>
+    </div>
+
+    <div *ngIf="!error() && !loading() && !isEmpty()" class="loans-grid">
+      <article
+        *ngFor="let loan of filteredLoans(); trackBy: trackLoanId"
+        class="loan-card"
+        data-loan-card
+        [class.overdue]="loan.status === 'OVERDUE'"
+      >
+        <a class="loan-cover" [routerLink]="['/books', loan.bookId]">
+          <img *ngIf="coverUrl(loan)" [src]="coverUrl(loan)!" alt="" loading="lazy" />
+          <div *ngIf="!coverUrl(loan)" class="loan-cover--fallback"></div>
+        </a>
+        <div class="loan-body">
+          <a class="loan-title" [routerLink]="['/books', loan.bookId]">{{ loan.bookTitle }}</a>
+          <p class="loan-author">{{ loan.bookAuthor }}</p>
+
+          <dl class="loan-meta">
+            <div class="loan-meta-row">
+              <dt>{{ 'LOANS.BORROWED' | translate }}</dt>
+              <dd>{{ loan.borrowedAt | date : 'short' }}</dd>
+            </div>
+            <div *ngIf="loan.status !== 'RETURNED'" class="loan-meta-row">
+              <dt>{{ 'LOANS.DUE' | translate }}</dt>
+              <dd>{{ loan.dueAt | date : 'short' }}</dd>
+            </div>
+            <div *ngIf="loan.status === 'RETURNED' && loan.returnedAt" class="loan-meta-row">
+              <dt>{{ 'LOANS.RETURNED' | translate }}</dt>
+              <dd>{{ loan.returnedAt | date : 'short' }}</dd>
+            </div>
+            <div class="loan-meta-row">
+              <dt>{{ 'LOANS.STATUS' | translate }}</dt>
+              <dd>
+                <span class="status-pill" [class]="'st-' + loan.status.toLowerCase()">
+                  <ng-container [ngSwitch]="loan.status">
+                    <ng-container *ngSwitchCase="'ACTIVE'">{{ 'LOANS.STATUS_ACTIVE' | translate }}</ng-container>
+                    <ng-container *ngSwitchCase="'OVERDUE'">{{ 'LOANS.STATUS_OVERDUE' | translate }}</ng-container>
+                    <ng-container *ngSwitchCase="'RETURNED'">{{ 'LOANS.STATUS_RETURNED' | translate }}</ng-container>
+                    <ng-container *ngSwitchDefault>{{ loan.status }}</ng-container>
+                  </ng-container>
+                </span>
+              </dd>
+            </div>
+            <div *ngIf="loan.branchId" class="loan-meta-row">
+              <dt>{{ 'LOANS.BRANCH' | translate }}</dt>
+              <dd class="mono">{{ loan.branchId }}</dd>
+            </div>
+            <div class="loan-meta-row">
+              <dt>{{ 'LOANS.RENEWALS' | translate }}</dt>
+              <dd>{{ loan.renewalCount }} / {{ loan.maxRenewals }}</dd>
+            </div>
+          </dl>
+
+          <div class="loan-actions">
+            <button
+              *ngIf="loan.canRenew"
+              type="button"
+              class="btn btn--secondary"
+              [disabled]="isPending(loan.loanId)"
+              (click)="renew(loan, $event)"
+            >
+              {{ 'LOANS.RENEW' | translate }}
+            </button>
+            <button
+              *ngIf="loan.canReturn"
+              type="button"
+              class="btn btn--primary"
+              [disabled]="isPending(loan.loanId)"
+              (click)="returnBook(loan, $event)"
+            >
+              {{ 'LOANS.RETURN' | translate }}
+            </button>
+          </div>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>

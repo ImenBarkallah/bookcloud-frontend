@@ -1,0 +1,41 @@
+<section class="offer-detail-shell">
+  <div class="state" *ngIf="loading">Chargement…</div>
+  <div class="state err" *ngIf="error">Erreur.</div>
+
+  <ng-container *ngIf="!loading && !error && offer as o">
+    <header class="head glass">
+      <div class="media">
+        <img *ngIf="uploadUrl(o.imageUrl)" [src]="uploadUrl(o.imageUrl)!" alt="" />
+        <div *ngIf="!uploadUrl(o.imageUrl)" class="ph">✨</div>
+      </div>
+      <div class="meta">
+        <div class="type">{{ o.type }}</div>
+        <h1>{{ o.title }}</h1>
+        <p>{{ o.description || '—' }}</p>
+        <div class="dates">{{ o.startDate || '—' }} → {{ o.endDate || '—' }}</div>
+        <div class="badges">
+          <span class="pill" [class.ok]="o.active && !o.expired" [class.bad]="o.expired">
+            {{ o.expired ? 'Expired' : (o.active ? 'Active' : 'Inactive') }}
+          </span>
+          <span class="pill foryou" *ngIf="o.personalized">For you</span>
+        </div>
+      </div>
+    </header>
+
+    <section class="books" *ngIf="books.length">
+      <div class="sec-head">
+        <h2>Related books</h2>
+        <span class="hint">{{ books.length }}</span>
+      </div>
+
+      <div class="grid">
+        <a class="bcard glass" *ngFor="let b of books" [routerLink]="['/books', b.id]">
+          <div class="btitle">{{ b.title }}</div>
+          <div class="bmeta">{{ b.author || '—' }}</div>
+          <div class="bcta">Voir & emprunter / réserver</div>
+        </a>
+      </div>
+    </section>
+  </ng-container>
+</section>
+

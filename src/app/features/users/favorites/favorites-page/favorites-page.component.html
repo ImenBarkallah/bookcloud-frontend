@@ -1,0 +1,45 @@
+<section class="fav-root">
+  <header class="fav-head">
+    <h1 class="fav-title">{{ 'FAVORITES.TITLE' | translate }}</h1>
+    <p class="fav-sub">{{ 'FAVORITES.SUBTITLE' | translate }}</p>
+  </header>
+
+  <div *ngIf="error()" class="fav-error" role="alert">{{ 'FAVORITES.LOAD_ERROR' | translate }}</div>
+
+  <div *ngIf="!error() && loading()" class="fav-grid" aria-busy="true">
+    <div *ngFor="let x of skelSlots" class="fav-skel"></div>
+  </div>
+
+  <div *ngIf="!error() && !loading() && isEmpty()" class="fav-empty">
+    <p>{{ 'FAVORITES.EMPTY' | translate }}</p>
+    <a routerLink="/catalogue" class="fav-link">{{ 'FAVORITES.CTA' | translate }}</a>
+  </div>
+
+  <div *ngIf="!error() && !loading() && !isEmpty()" class="fav-grid">
+    <article *ngFor="let b of items()" class="fav-card">
+      <a class="fav-cover" [routerLink]="['/books', b.id]">
+        <img *ngIf="coverUrl(b)" [src]="coverUrl(b)!" alt="" loading="lazy" />
+        <div *ngIf="!coverUrl(b)" class="fav-cover--fallback"></div>
+      </a>
+      <div class="fav-meta">
+        <a class="fav-name" [routerLink]="['/books', b.id]">{{ b.title }}</a>
+        <div class="fav-subline">
+          <span>{{ b.author }}</span>
+          <span class="dot">·</span>
+          <span class="pill">{{ b.categoryName || b.categoryId || '—' }}</span>
+        </div>
+        <div class="fav-actions">
+          <button
+            type="button"
+            class="fav-heart"
+            [disabled]="isPending(b.id)"
+            (click)="toggle(b, $event)"
+            [attr.aria-label]="'HOME.DISCOVERY.TOGGLE_FAV' | translate"
+          >
+            ♥
+          </button>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>

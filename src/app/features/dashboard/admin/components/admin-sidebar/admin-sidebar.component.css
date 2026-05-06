@@ -1,0 +1,17 @@
+/* Small additions for grouped nav labels.
+   Core sidebar styles live in `admin-shell.shared.css` (shared shell). */
+
+.nav-group-label {
+  margin-top: 14px;
+  padding: 10px 10px 6px;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.nav-group-label:first-child {
+  margin-top: 0;
+}
+

@@ -1,7 +1,8 @@
-<app-navbar />
+<app-auth-toast />
+<app-navbar *ngIf="showPublicChrome" />
 
-<div class="route-shell" #routeShell>
+<div class="route-shell" #routeShell [class.route-shell--staff]="!showPublicChrome">
   <router-outlet />
 </div>
 
-<app-site-footer />
+<app-site-footer *ngIf="showPublicChrome" />

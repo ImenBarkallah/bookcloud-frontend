@@ -1,0 +1,133 @@
+<section class="admin-layout admin-moderation">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Modération">
+      <button type="button" class="topbtn" (click)="load()" [disabled]="loading">
+        <app-hero-icon name="arrow-path" size="sm" />
+        <span>Rafraîchir</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Modération contenu" subtitle="Signalements · actions · résolution" />
+
+      <main class="content">
+        <div class="kpi-row" *ngIf="!loading && !error">
+          <div class="kpi glass kpi--amber">
+            <span class="kpi-ico" aria-hidden="true">🟠</span>
+            <div><div class="kpi-val">{{ kpiOpen() }}</div><div class="kpi-label">OPEN</div></div>
+          </div>
+          <div class="kpi glass kpi--green">
+            <span class="kpi-ico" aria-hidden="true">🟢</span>
+            <div><div class="kpi-val">{{ kpiResolved() }}</div><div class="kpi-label">RESOLVED</div></div>
+          </div>
+          <div class="kpi glass kpi--red">
+            <span class="kpi-ico" aria-hidden="true">🔴</span>
+            <div><div class="kpi-val">{{ kpiRejected() }}</div><div class="kpi-label">REJECTED</div></div>
+          </div>
+        </div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tabs" role="group" aria-label="Status">
+            <button type="button" class="pill-btn" [class.on]="tab==='OPEN'" (click)="setTab('OPEN')">OPEN</button>
+            <button type="button" class="pill-btn" [class.on]="tab==='RESOLVED'" (click)="setTab('RESOLVED')">RESOLVED</button>
+            <button type="button" class="pill-btn" [class.on]="tab==='REJECTED'" (click)="setTab('REJECTED')">REJECTED</button>
+            <button type="button" class="pill-btn" [class.on]="tab==='ALL'" (click)="setTab('ALL')">ALL</button>
+          </div>
+
+          <div class="search">
+            <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+            <input [ngModel]="q" (ngModelChange)="onQueryChange($event)" placeholder="Rechercher…" />
+          </div>
+        </div>
+
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger la modération.</div>
+
+        <p class="empty" *ngIf="!loading && !error && filtered.length===0">Aucun report.</p>
+
+        <section class="table glass" *ngIf="!loading && !error && filtered.length">
+          <div class="tr th">
+            <div>Type</div>
+            <div>Entity</div>
+            <div>Raison</div>
+            <div>Status</div>
+            <div class="r">Actions</div>
+          </div>
+          <div class="tr row" *ngFor="let r of filtered">
+            <div class="mono strong">{{ r.entityType }}</div>
+            <div class="mono">{{ r.entityId }}</div>
+            <div class="muted">{{ r.reason }}</div>
+            <div>
+              <span class="pill" [class.ok]="r.status==='RESOLVED'" [class.bad]="r.status==='REJECTED'" [class.warn]="r.status==='OPEN'">
+                {{ r.status }}
+              </span>
+            </div>
+            <div class="r actions">
+              <button type="button" class="ghost ghost--ico" (click)="openDetail(r)" title="Voir">
+                <app-hero-icon name="eye" size="sm" />
+              </button>
+              <button type="button" class="ghost ghost--ico" (click)="toggleHidden(r, true)" title="Masquer" [disabled]="pending.has(r.id + ':hide')">
+                <app-hero-icon name="lock-closed" size="sm" />
+              </button>
+              <button type="button" class="ghost ghost--ico" (click)="toggleHidden(r, false)" title="Rétablir" [disabled]="pending.has(r.id + ':hide')">
+                <app-hero-icon name="lock-open" size="sm" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Detail modal -->
+<div class="modal-backdrop" *ngIf="detailOpen" (click)="closeDetail()" aria-hidden="true"></div>
+<div class="modal" *ngIf="detailOpen" role="dialog" aria-modal="true" aria-label="Report">
+  <div class="modal-card glass modal-card--wide" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <span class="chip">ADMIN</span>
+        <strong>Détail report</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDetail()" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body" *ngIf="detail as d">
+      <div class="grid">
+        <div class="box">
+          <div class="k">Type</div><div class="v mono">{{ d.entityType }}</div>
+        </div>
+        <div class="box">
+          <div class="k">Entity ID</div><div class="v mono">{{ d.entityId }}</div>
+        </div>
+        <div class="box span2">
+          <div class="k">Raison</div><div class="v">{{ d.reason }}</div>
+        </div>
+        <div class="box span2" *ngIf="d.details">
+          <div class="k">Détails</div><div class="v muted">{{ d.details }}</div>
+        </div>
+      </div>
+
+      <div class="actions-row" *ngIf="d.status==='OPEN'">
+        <label class="check">
+          <input type="checkbox" [(ngModel)]="hideOnResolve" />
+          Masquer le contenu lors de la résolution
+        </label>
+        <label class="field">
+          <span>Note</span>
+          <input type="text" [(ngModel)]="resolutionNote" placeholder="Optionnel" />
+        </label>
+      </div>
+
+      <div class="modal-actions" *ngIf="d.status==='OPEN'">
+        <button type="button" class="ghost" (click)="reject(d)" [disabled]="pending.has(d.id)">Rejeter</button>
+        <button type="button" class="topbtn" (click)="resolve(d)" [disabled]="pending.has(d.id)">Résoudre</button>
+      </div>
+    </div>
+  </div>
+</div>
+

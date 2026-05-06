@@ -1,0 +1,157 @@
+<section class="discovery-root">
+  <canvas #bgCanvas class="discovery-canvas" aria-hidden="true"></canvas>
+
+  <div class="discovery-inner">
+    <header class="discovery-head" data-discovery-title>
+      <span class="discovery-badge">{{ 'HOME.DISCOVERY.BADGE' | translate }}</span>
+      <h2 class="discovery-title">{{ 'HOME.DISCOVERY.TITLE' | translate }}</h2>
+      <p class="discovery-sub">{{ 'HOME.DISCOVERY.SUBTITLE' | translate }}</p>
+    </header>
+
+    <!-- Populaires -->
+    <div class="discovery-block">
+      <h3 class="block-title">{{ 'HOME.DISCOVERY.POPULAR' | translate }}</h3>
+
+      <p *ngIf="popularError()" class="discovery-msg discovery-msg--error" role="alert">
+        {{ 'HOME.DISCOVERY.LOAD_ERROR' | translate }}
+      </p>
+
+      <div *ngIf="!popularError() && !popularDone()" class="card-grid" aria-busy="true">
+        <div *ngFor="let x of skelSlots" class="skeleton-card"></div>
+      </div>
+
+      <p *ngIf="!popularError() && popularDone() && popularBooks().length === 0" class="discovery-msg">
+        {{ 'HOME.DISCOVERY.EMPTY_POPULAR' | translate }}
+      </p>
+
+      <div *ngIf="!popularError() && popularDone() && popularBooks().length > 0" class="card-grid">
+        <article
+          *ngFor="let book of popularBooks(); trackBy: trackBook"
+          class="book-card"
+          data-discovery-card
+        >
+          <div class="book-card__cover-wrap">
+            <img
+              *ngIf="book.coverUrl && !coverFailed()[book.id]"
+              class="book-card__cover"
+              [src]="book.coverUrl"
+              alt=""
+              (error)="onCoverError(book.id)"
+              loading="lazy"
+            />
+            <div
+              *ngIf="!book.coverUrl || coverFailed()[book.id]"
+              class="book-card__fallback"
+              [style.background]="coverGradient(book.id)"
+            ></div>
+            <button
+              type="button"
+              class="heart-btn"
+              [class.on]="book.isFavorited"
+              [disabled]="isPending(book.id)"
+              (click)="toggleFavorite(book, $event)"
+              [attr.aria-pressed]="book.isFavorited"
+              [attr.aria-label]="'HOME.DISCOVERY.TOGGLE_FAV' | translate"
+            >
+              <span *ngIf="isPending(book.id)" class="heart-pulse" aria-hidden="true">♥</span>
+              <ng-container *ngIf="!isPending(book.id)">♥</ng-container>
+            </button>
+          </div>
+          <div class="book-card__meta">
+            <a class="book-card__title" [routerLink]="['/books', book.id]">{{ book.title }}</a>
+            <p class="book-card__sub">
+              {{ book.author }} · <span class="pill">{{ book.categoryName || '—' }}</span>
+            </p>
+            <div class="book-card__rating">
+              <span aria-hidden="true">★</span>
+              {{ book.averageRating | number : '1.1-1' }}
+              <span class="rcount">({{ book.ratingCount }})</span>
+            </div>
+            <span class="avail" [class.no]="book.availableCopies < 1">
+              {{
+                (book.availableCopies > 0 ? 'HOME.DISCOVERY.AVAILABLE' : 'HOME.DISCOVERY.UNAVAILABLE')
+                  | translate
+              }}
+            </span>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- Recommandations -->
+    <div class="discovery-block discovery-block--rec">
+      <h3 class="block-title">{{ 'HOME.DISCOVERY.RECOMMENDED' | translate }}</h3>
+      <p class="block-hint">{{ 'HOME.DISCOVERY.REC_HINT' | translate }}</p>
+
+      <div *ngIf="!recDone() && hasUser()" class="card-grid" aria-busy="true">
+        <div *ngFor="let x of skelSlots" class="skeleton-card"></div>
+      </div>
+
+      <p *ngIf="recDone() && recEmptyKind() === 'error'" class="discovery-msg discovery-msg--error" role="alert">
+        {{ 'HOME.DISCOVERY.REC_LOAD_ERROR' | translate }}
+      </p>
+
+      <p *ngIf="recDone() && recEmptyKind() === 'guest'" class="discovery-msg">
+        {{ 'HOME.DISCOVERY.REC_EMPTY_NOT_AUTH' | translate }}
+        <a routerLink="/auth/login" class="inline-link">{{ 'HOME.CTA_SIGNIN' | translate }}</a>
+      </p>
+
+      <p *ngIf="recDone() && recEmptyKind() === 'no-favorites'" class="discovery-msg">
+        {{ 'HOME.DISCOVERY.REC_EMPTY_NO_FAVS' | translate }}
+      </p>
+
+      <div *ngIf="recDone() && recEmptyKind() === 'none' && recBooks().length > 0" class="card-grid">
+        <article
+          *ngFor="let book of recBooks(); trackBy: trackBook"
+          class="book-card"
+          data-discovery-card
+        >
+          <div class="book-card__cover-wrap">
+            <img
+              *ngIf="book.coverUrl && !coverFailed()[book.id]"
+              class="book-card__cover"
+              [src]="book.coverUrl"
+              alt=""
+              (error)="onCoverError(book.id)"
+              loading="lazy"
+            />
+            <div
+              *ngIf="!book.coverUrl || coverFailed()[book.id]"
+              class="book-card__fallback"
+              [style.background]="coverGradient(book.id)"
+            ></div>
+            <button
+              type="button"
+              class="heart-btn"
+              [class.on]="book.isFavorited"
+              [disabled]="isPending(book.id)"
+              (click)="toggleFavorite(book, $event)"
+              [attr.aria-pressed]="book.isFavorited"
+              [attr.aria-label]="'HOME.DISCOVERY.TOGGLE_FAV' | translate"
+            >
+              <span *ngIf="isPending(book.id)" class="heart-pulse" aria-hidden="true">♥</span>
+              <ng-container *ngIf="!isPending(book.id)">♥</ng-container>
+            </button>
+          </div>
+          <div class="book-card__meta">
+            <a class="book-card__title" [routerLink]="['/books', book.id]">{{ book.title }}</a>
+            <p class="book-card__sub">
+              {{ book.author }} · <span class="pill">{{ book.categoryName || '—' }}</span>
+            </p>
+            <div class="book-card__rating">
+              <span aria-hidden="true">★</span>
+              {{ book.averageRating | number : '1.1-1' }}
+              <span class="rcount">({{ book.ratingCount }})</span>
+            </div>
+            <span class="avail" [class.no]="book.availableCopies < 1">
+              {{
+                (book.availableCopies > 0 ? 'HOME.DISCOVERY.AVAILABLE' : 'HOME.DISCOVERY.UNAVAILABLE')
+                  | translate
+              }}
+            </span>
+          </div>
+        </article>
+      </div>
+    </div>
+  </div>
+</section>

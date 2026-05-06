@@ -1,0 +1,287 @@
+<section class="admin-layout admin-books">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Livres">
+      <button type="button" class="topbtn" (click)="openCreate()">
+        <app-hero-icon name="plus" size="sm" />
+        <span>Ajouter</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Gestion des livres" subtitle="Catalogue · filtres · édition · upload cover" />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les livres.</div>
+
+        <div class="kpi-row" *ngIf="!loading && !error">
+          <div class="kpi glass">
+            <span class="kpi-ico" aria-hidden="true">📚</span>
+            <div>
+              <div class="kpi-val">{{ kpiTotal() }}</div>
+              <div class="kpi-label">Total livres</div>
+            </div>
+          </div>
+          <div class="kpi glass kpi--green">
+            <span class="kpi-ico" aria-hidden="true">🟢</span>
+            <div>
+              <div class="kpi-val">{{ kpiAvailable() }}</div>
+              <div class="kpi-label">Disponibles</div>
+            </div>
+          </div>
+          <div class="kpi glass kpi--red">
+            <span class="kpi-ico" aria-hidden="true">🔴</span>
+            <div>
+              <div class="kpi-val">{{ kpiUnavailable() }}</div>
+              <div class="kpi-label">Indisponibles</div>
+            </div>
+          </div>
+          <div class="kpi glass kpi--amber">
+            <span class="kpi-ico" aria-hidden="true">⭐</span>
+            <div>
+              <div class="kpi-val">{{ kpiPopular() }}</div>
+              <div class="kpi-label">Populaires (heuristique)</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input
+                [ngModel]="q"
+                (ngModelChange)="onQueryChange($event)"
+                type="text"
+                placeholder="Rechercher (titre, auteur)…"
+              />
+            </div>
+            <div class="count">
+              <span class="chip">{{ filtered.length }}</span>
+              <span class="muted">affiché(s)</span>
+              <span class="muted">· {{ all.length }} au total</span>
+            </div>
+          </div>
+
+          <div class="tool-right">
+            <div class="selects">
+              <select [ngModel]="categoryId" (ngModelChange)="setCategory($event || null)">
+                <option [ngValue]="null">Toutes catégories</option>
+                <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+              </select>
+              <select [ngModel]="authorId" (ngModelChange)="setAuthor($event || null)">
+                <option [ngValue]="null">Tous auteurs</option>
+                <option *ngFor="let a of authors" [ngValue]="a.id">{{ a.name }}</option>
+              </select>
+            </div>
+
+            <div class="filters" role="group" aria-label="Disponibilité">
+              <button type="button" class="pill-btn" [class.on]="availability === 'ALL'" (click)="setAvailability('ALL')">
+                Tous
+              </button>
+              <button type="button" class="pill-btn" [class.on]="availability === 'AVAILABLE'" (click)="setAvailability('AVAILABLE')">
+                Disponibles
+              </button>
+              <button type="button" class="pill-btn pill-btn--warn" [class.on]="availability === 'UNAVAILABLE'" (click)="setAvailability('UNAVAILABLE')">
+                Indisponibles
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!loading && !error && filtered.length === 0">Aucun livre ne correspond aux filtres.</p>
+
+        <section class="table glass" *ngIf="!loading && !error && filtered.length">
+          <div class="tr th">
+            <div>Image</div>
+            <div>Titre</div>
+            <div>Auteur(s)</div>
+            <div>Catégorie</div>
+            <div>Disponibilité</div>
+            <div>Featured</div>
+            <div class="r">Actions</div>
+          </div>
+          <div class="tr row" *ngFor="let b of filtered; trackBy: trackById">
+            <div class="imgcell">
+              <div class="thumb" *ngIf="b.coverUrl">
+                <img [src]="uploadUrl(b.coverUrl)" alt="" loading="lazy" />
+              </div>
+              <div class="thumb thumb--ph" *ngIf="!b.coverUrl">📘</div>
+            </div>
+            <div class="title">
+              <strong>{{ b.title }}</strong>
+              <div class="muted small">{{ b.isbn || '—' }}</div>
+            </div>
+            <div class="muted">{{ b.author }}</div>
+            <div class="muted mono">{{ b.categoryId }}</div>
+            <div>
+              <span class="pill" [class.ok]="isAvailable(b)" [class.bad]="!isAvailable(b)">
+                {{ isAvailable(b) ? 'Disponible' : 'Indisponible' }}
+              </span>
+              <div class="muted small">{{ b.availableCopies }}/{{ b.totalCopies }}</div>
+            </div>
+            <div>
+              <label class="sw" [class.off]="!b.featured">
+                <input
+                  type="checkbox"
+                  [checked]="!!b.featured"
+                  (change)="toggleFeatured(b, $any($event.target).checked)"
+                  [disabled]="pendingIds.has(b.id)"
+                />
+                <span class="sw-track" aria-hidden="true"></span>
+              </label>
+            </div>
+            <div class="r actions">
+              <button type="button" class="ghost ghost--ico" (click)="openView(b)" title="Voir détails">
+                <app-hero-icon name="eye" size="sm" />
+              </button>
+              <button type="button" class="ghost ghost--ico" (click)="openEdit(b)" title="Modifier">
+                <app-hero-icon name="pencil-square" size="sm" />
+              </button>
+              <button type="button" class="ghost danger ghost--ico" (click)="openDelete(b)" title="Supprimer" [disabled]="!canDelete(b.id)">
+                <app-hero-icon name="trash" size="sm" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Add/Edit/View -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="modalOpen" role="dialog" aria-modal="true" aria-label="Livre">
+  <div class="modal-card glass modal-card--wide" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>
+          {{ modalKind === 'create' ? 'Ajouter un livre' : modalKind === 'edit' ? 'Modifier le livre' : 'Détails du livre' }}
+        </strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeModal()" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div class="state" *ngIf="modalLoading">Chargement…</div>
+
+      <form *ngIf="!modalLoading" class="form" (submit)="$event.preventDefault(); modalKind !== 'view' && save()">
+        <div class="grid">
+          <label>
+            <span>Titre</span>
+            <input type="text" [(ngModel)]="formTitle" name="title" [disabled]="modalKind === 'view'" />
+          </label>
+
+          <label class="span2">
+            <span>Description</span>
+            <textarea [(ngModel)]="formDescription" name="description" rows="3" [disabled]="modalKind === 'view'"></textarea>
+          </label>
+
+          <label>
+            <span>Catégorie</span>
+            <select [(ngModel)]="formCategoryId" name="categoryId" [disabled]="modalKind === 'view'">
+              <option value="" disabled>Sélectionner…</option>
+              <option *ngFor="let c of categories" [value]="c.id">{{ c.name }}</option>
+            </select>
+          </label>
+
+          <label>
+            <span>Auteur(s)</span>
+            <select multiple [(ngModel)]="formAuthorIds" name="authorIds" [disabled]="modalKind === 'view'">
+              <option *ngFor="let a of authors" [value]="a.id">{{ a.name }}</option>
+            </select>
+            <em class="hint">Ctrl/Cmd pour multi-sélection</em>
+          </label>
+
+          <label>
+            <span>Nombre d’exemplaires</span>
+            <input
+              type="number"
+              [(ngModel)]="formTotalCopies"
+              name="totalCopies"
+              [min]="modalKind === 'create' ? 1 : 0"
+              [disabled]="modalKind === 'view'"
+            />
+          </label>
+
+          <label>
+            <span>ISBN</span>
+            <input type="text" [(ngModel)]="formIsbn" name="isbn" [disabled]="modalKind === 'view'" />
+          </label>
+
+          <label>
+            <span>Éditeur</span>
+            <input type="text" [(ngModel)]="formPublisher" name="publisher" [disabled]="modalKind === 'view'" />
+          </label>
+
+          <label>
+            <span>Année</span>
+            <input type="number" [(ngModel)]="formPublicationYear" name="publicationYear" [disabled]="modalKind === 'view'" />
+          </label>
+
+          <label class="span2">
+            <span>Featured (max 5)</span>
+            <div class="row-inline">
+              <label class="sw" [class.off]="!formFeatured">
+                <input type="checkbox" [(ngModel)]="formFeatured" name="featured" [disabled]="modalKind === 'view'" />
+                <span class="sw-track" aria-hidden="true"></span>
+              </label>
+              <span class="muted small">{{ formFeatured ? 'Oui (visible dans Home)' : 'Non' }}</span>
+            </div>
+          </label>
+
+          <div class="span2">
+            <span>Image (cover)</span>
+            <div class="imgpick">
+              <div class="thumb lg">
+                <img *ngIf="previewObjectUrl" [src]="previewObjectUrl" alt="" />
+                <img *ngIf="!previewObjectUrl && currentCoverUrl" [src]="uploadUrl(currentCoverUrl)" alt="" />
+                <div *ngIf="!previewObjectUrl && !currentCoverUrl" class="thumb--ph">📘</div>
+              </div>
+              <div class="imgbtns" *ngIf="modalKind !== 'view'">
+                <input type="file" accept="image/*" (change)="onPickImage($any($event.target).files?.[0] ?? null)" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <footer class="modal-foot">
+          <button type="button" class="ghost" (click)="closeModal()">Fermer</button>
+          <button type="button" class="topbtn" *ngIf="modalKind !== 'view'" [disabled]="pendingSave" (click)="save()">
+            Enregistrer
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-backdrop" *ngIf="deleteModalOpen" (click)="closeDelete()" aria-hidden="true"></div>
+<div class="modal" *ngIf="deleteModalOpen" role="dialog" aria-modal="true" aria-label="Supprimer">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>Supprimer</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDelete()" [disabled]="pendingDelete" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="delete-msg" *ngIf="deleteTarget as d">
+        Supprimer le livre <span class="mono">{{ d.title }}</span> ?
+      </p>
+      <p class="muted small">Cette action est irréversible.</p>
+    </div>
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeDelete()" [disabled]="pendingDelete">Annuler</button>
+      <button type="button" class="ghost danger" (click)="confirmDelete()" [disabled]="pendingDelete">Supprimer</button>
+    </footer>
+  </div>
+</div>
+

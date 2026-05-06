@@ -1,0 +1,31 @@
+<header class="topbar">
+  <div class="topbar-left">
+    <button
+      type="button"
+      class="topbar-nav-toggle"
+      (click)="sidebarUi.toggleMobile()"
+      [attr.aria-expanded]="sidebarUi.mobileOpen()"
+      aria-controls="admin-sidebar-nav"
+      aria-label="Ouvrir ou fermer le menu"
+      title="Menu"
+    >
+      <app-hero-icon name="bars-3" size="md" />
+    </button>
+    <div class="crumbs">
+      <span>{{ section }}</span>
+      <span class="sep">/</span>
+      <strong>{{ page }}</strong>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <a class="link-site" routerLink="/" title="Retour au site public">Site public</a>
+
+    <div class="search" *ngIf="showSearch">
+      <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+      <input type="text" placeholder="Rechercher…" disabled />
+    </div>
+
+    <ng-content />
+  </div>
+</header>
+

@@ -1,0 +1,47 @@
+<section class="faq-section home-section">
+  <canvas class="faq-blob-canvas" aria-hidden="true"></canvas>
+
+  <div class="faq-layout">
+    <aside class="faq-sidebar">
+      <h2 class="faq-sidebar-title">{{ 'HOME.FAQ.TITLE' | translate }}</h2>
+      <p class="faq-sidebar-sub">{{ 'HOME.FAQ.SUBTITLE' | translate }}</p>
+      <nav class="faq-pills">
+        <button
+          type="button"
+          class="faq-pill"
+          *ngFor="let c of categories"
+          [class.active]="activeCategory === c"
+          (click)="selectCategory(c)"
+        >
+          {{ c }}
+        </button>
+      </nav>
+      <input
+        type="search"
+        class="faq-side-search"
+        [placeholder]="'HOME.FAQ.FILTER' | translate"
+        [(ngModel)]="keyword"
+        (input)="onKeyword()"
+      />
+    </aside>
+
+    <div class="faq-main">
+      <h3 class="faq-heading-split section-title-display">{{ 'HOME.FAQ.HEADING' | translate }}</h3>
+
+      <div class="faq-list">
+        <div class="faq-item" *ngFor="let f of filtered(); let i = index">
+          <button type="button" class="faq-head" (click)="toggle(i)">
+            <span class="faq-q"><span class="ico">{{ f.icon }}</span> {{ f.question }}</span>
+            <span class="faq-plus">+</span>
+          </button>
+          <div class="faq-body">
+            <div class="faq-body-inner">
+              <p>{{ f.answer }}</p>
+              <div class="helpful">{{ 'HOME.FAQ.HELPFUL' | translate }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

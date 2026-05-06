@@ -1,0 +1,112 @@
+<!-- Fond assombri : petit écran uniquement (voir CSS) -->
+<div
+  class="admin-aside-backdrop"
+  [class.is-open]="ui.mobileOpen()"
+  (click)="onBackdropClick()"
+  aria-hidden="true"
+></div>
+
+<aside
+  class="admin-aside"
+  [class.admin-aside--collapsed]="ui.collapsed()"
+  [class.admin-aside--mobile-open]="ui.mobileOpen()"
+>
+  <div class="aside-brand">
+    <div class="brand-mark">BC</div>
+    <div class="brand-meta">
+      <div class="brand-title">BookCloud</div>
+      <div class="brand-sub">Admin</div>
+    </div>
+    <button
+      type="button"
+      class="aside-collapse-btn"
+      (click)="toggleCollapse($event)"
+      [attr.aria-expanded]="!ui.collapsed()"
+      [attr.aria-label]="ui.collapsed() ? 'Développer le menu' : 'Réduire le menu'"
+      title="{{ ui.collapsed() ? 'Développer' : 'Réduire' }}"
+    >
+      <app-hero-icon [name]="ui.collapsed() ? 'chevron-right' : 'chevron-left'" size="sm" />
+    </button>
+  </div>
+
+  <div class="aside-section">
+    <div class="aside-label">Navigation</div>
+    <nav id="admin-sidebar-nav" class="aside-nav" (click)="onAsideNavClick($event)">
+      <div class="nav-group-label">Overview</div>
+      <a
+        class="aside-link"
+        routerLink="/admin"
+        routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }"
+        title="Tableau de bord"
+      >
+        <span class="ico"><app-hero-icon name="squares-2x2" size="lg" /></span>
+        <span class="aside-link-text">Tableau de bord</span>
+      </a>
+
+      <div class="nav-group-label">Catalogue</div>
+      <a class="aside-link" routerLink="/admin/categories" routerLinkActive="active" title="Catégories">
+        <span class="ico"><app-hero-icon name="tag" size="lg" /></span>
+        <span class="aside-link-text">Catégories</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/books" routerLinkActive="active" title="Livres">
+        <span class="ico"><app-hero-icon name="book-open" size="lg" /></span>
+        <span class="aside-link-text">Livres</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/authors" routerLinkActive="active" title="Auteurs">
+        <span class="ico"><app-hero-icon name="pencil-square" size="lg" /></span>
+        <span class="aside-link-text">Auteurs</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/partners" routerLinkActive="active" title="Partenaires">
+        <span class="ico"><app-hero-icon name="users" size="lg" /></span>
+        <span class="aside-link-text">Partenaires</span>
+      </a>
+
+      <div class="nav-group-label">Circulation</div>
+      <a class="aside-link" routerLink="/admin/loans" routerLinkActive="active" title="Emprunts">
+        <span class="ico"><app-hero-icon name="bookmark" size="lg" /></span>
+        <span class="aside-link-text">Emprunts</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/reservations" routerLinkActive="active" title="Réservations">
+        <span class="ico"><app-hero-icon name="bookmark" size="lg" /></span>
+        <span class="aside-link-text">Réservations</span>
+      </a>
+
+      <div class="nav-group-label">Marketing</div>
+      <a class="aside-link" routerLink="/admin/offers" routerLinkActive="active" title="Offres">
+        <span class="ico"><app-hero-icon name="cube" size="lg" /></span>
+        <span class="aside-link-text">Offres</span>
+      </a>
+
+      <div class="nav-group-label">Système</div>
+      <a class="aside-link" routerLink="/admin/news" routerLinkActive="active" title="News & annonces">
+        <span class="ico"><app-hero-icon name="credit-card" size="lg" /></span>
+        <span class="aside-link-text">News & annonces</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/users" routerLinkActive="active" title="Utilisateurs">
+        <span class="ico"><app-hero-icon name="users" size="lg" /></span>
+        <span class="aside-link-text">Utilisateurs</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/roles" routerLinkActive="active" title="Rôles & accès">
+        <span class="ico"><app-hero-icon name="table-cells" size="lg" /></span>
+        <span class="aside-link-text">Rôles & accès</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/settings" routerLinkActive="active" title="Paramètres">
+        <span class="ico"><app-hero-icon name="tag" size="lg" /></span>
+        <span class="aside-link-text">Paramètres</span>
+      </a>
+
+      <a class="aside-link" routerLink="/admin/moderation" routerLinkActive="active" title="Modération">
+        <span class="ico"><app-hero-icon name="eye" size="lg" /></span>
+        <span class="aside-link-text">Modération</span>
+      </a>
+    </nav>
+  </div>
+</aside>

@@ -1,0 +1,70 @@
+<article class="card-root" [class.list]="layout === 'list'">
+  <div class="card-surface glass">
+    <div class="cover-wrap">
+      <img
+        *ngIf="book.coverUrl && !coverFailed"
+        class="cover-img"
+        [src]="book.coverUrl"
+        alt=""
+        (error)="onCoverError()"
+      />
+      <div
+        *ngIf="!book.coverUrl || coverFailed"
+        class="cover-fallback"
+        [style.background]="gradientFallback()"
+      ></div>
+      <div class="cover-overlay">
+        <button type="button" class="qv-btn" (click)="quickView.emit()">
+          {{ 'CATALOGUE.QUICK_VIEW' | translate }}
+        </button>
+      </div>
+      <div class="badges">
+        <span class="badge new" *ngIf="book.isNew">{{ 'CATALOGUE.BADGE_NEW' | translate }}</span>
+        <span class="badge pop" *ngIf="book.isPopular">{{ 'CATALOGUE.BADGE_POPULAR' | translate }}</span>
+      </div>
+      <button
+        type="button"
+        class="heart-btn"
+        [class.on]="book.isFavorited"
+        (click)="favoriteToggle.emit()"
+        [attr.aria-label]="'CATALOGUE.FAVORITE_ARIA' | translate"
+      >
+        ♥
+      </button>
+    </div>
+    <div class="meta">
+      <h3 class="title">
+        <a [routerLink]="['/books', book.id]" class="title-link">{{ book.title }}</a>
+      </h3>
+      <p class="sub">
+        {{ book.author }} · <span class="pill">{{ book.categoryName || '—' }}</span>
+      </p>
+      <div class="rating-row">
+        <span class="stars" aria-hidden="true">★</span>
+        <span>{{ book.averageRating | number : '1.1-1' }}</span>
+        <span class="rcount">({{ book.ratingCount }})</span>
+      </div>
+      <div class="avail-row">
+        <span class="avail-pill" [class.ok]="book.availableCopies > 0">
+          {{
+            book.availableCopies > 0
+              ? ('CATALOGUE.IN_STOCK' | translate)
+              : ('CATALOGUE.OUT_STOCK' | translate)
+          }}
+        </span>
+        <span class="fmt" *ngIf="book.mediaFormat">{{ book.mediaFormat }}</span>
+      </div>
+      <div class="actions">
+        <button
+          type="button"
+          class="borrow-btn"
+          [disabled]="borrowing || book.availableCopies <= 0"
+          (click)="borrow.emit()"
+        >
+          <span *ngIf="!borrowing">{{ 'CATALOGUE.BORROW' | translate }}</span>
+          <span class="spinner" *ngIf="borrowing"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</article>

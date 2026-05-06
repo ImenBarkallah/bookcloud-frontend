@@ -1,0 +1,83 @@
+<aside class="filters glass" [class.open]="mobileOpen">
+  <div class="head">
+    <h2>{{ 'CATALOGUE.FILTERS_TITLE' | translate }}</h2>
+    <button type="button" class="close-m" (click)="closeMobile.emit()" *ngIf="mobileOpen">
+      ×
+    </button>
+  </div>
+
+  <label class="field">
+    <span>{{ 'CATALOGUE.CATEGORY' | translate }}</span>
+    <select [ngModel]="draft.categoryId" (ngModelChange)="patch({ categoryId: $event || null })">
+      <option [ngValue]="null">{{ 'CATALOGUE.CATEGORY_ALL' | translate }}</option>
+      <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
+    </select>
+  </label>
+
+  <label class="check">
+    <input type="checkbox" [ngModel]="draft.availableOnly" (ngModelChange)="patch({ availableOnly: $event })" />
+    {{ 'CATALOGUE.AVAILABLE_ONLY' | translate }}
+  </label>
+
+  <div class="field">
+    <span>{{ 'CATALOGUE.RATING_MIN' | translate }}</span>
+    <div class="stars-pick">
+      <button
+        type="button"
+        *ngFor="let s of [1, 2, 3, 4, 5]"
+        [class.on]="(draft.minRating ?? 0) >= s"
+        (click)="setRating(s)"
+      >
+        ★
+      </button>
+      <button type="button" class="clear-mini" (click)="patch({ minRating: null })">×</button>
+    </div>
+  </div>
+
+  <div class="field range-field">
+    <span>{{ 'CATALOGUE.YEAR_RANGE' | translate }}</span>
+    <div class="range-row">
+      <input
+        type="number"
+        [ngModel]="draft.yearFrom"
+        (ngModelChange)="patch({ yearFrom: $event })"
+        placeholder="Min"
+      />
+      <span class="dash">—</span>
+      <input
+        type="number"
+        [ngModel]="draft.yearTo"
+        (ngModelChange)="patch({ yearTo: $event })"
+        placeholder="Max"
+      />
+    </div>
+  </div>
+
+  <div class="field">
+    <span>{{ 'CATALOGUE.FORMAT' | translate }}</span>
+    <div class="fmt-row">
+      <button type="button" [class.on]="draft.format === 'PHYSICAL'" (click)="setFormat('PHYSICAL')">
+        {{ 'CATALOGUE.FORMAT_PHYSICAL' | translate }}
+      </button>
+      <button type="button" [class.on]="draft.format === 'EBOOK'" (click)="setFormat('EBOOK')">
+        {{ 'CATALOGUE.FORMAT_EBOOK' | translate }}
+      </button>
+      <button type="button" [class.on]="draft.format === 'AUDIO'" (click)="setFormat('AUDIO')">
+        {{ 'CATALOGUE.FORMAT_AUDIO' | translate }}
+      </button>
+      <button type="button" class="clear-mini" (click)="setFormat(null)">×</button>
+    </div>
+  </div>
+
+  <label class="field">
+    <span>{{ 'CATALOGUE.SORT_LABEL' | translate }}</span>
+    <select [ngModel]="draft.sort" (ngModelChange)="patch({ sort: $event })">
+      <option *ngFor="let p of sortPresets()" [ngValue]="p.id">{{ p.key | translate }}</option>
+    </select>
+  </label>
+
+  <div class="actions">
+    <button type="button" class="primary" (click)="onApply()">{{ 'CATALOGUE.APPLY' | translate }}</button>
+    <button type="button" class="ghost" (click)="onReset()">{{ 'CATALOGUE.RESET' | translate }}</button>
+  </div>
+</aside>

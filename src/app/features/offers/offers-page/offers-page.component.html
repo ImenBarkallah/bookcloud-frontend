@@ -1,0 +1,68 @@
+<section class="offers-shell">
+  <header class="hero glass">
+    <div class="hero-left">
+      <h1>Offres</h1>
+      <p>Découvre les sélections du moment, événements, et promos personnalisées.</p>
+    </div>
+    <div class="hero-right">
+      <a routerLink="/catalogue" class="cta">Explorer le catalogue</a>
+    </div>
+  </header>
+
+  <div class="state" *ngIf="loading">Chargement…</div>
+  <div class="state err" *ngIf="error">Erreur de chargement.</div>
+
+  <section class="rec" *ngIf="!loading && !error && recommended.length">
+    <div class="sec-head">
+      <h2>🎯 Recommended for you</h2>
+      <span class="hint">Based on your interests</span>
+    </div>
+    <div class="grid">
+      <a class="card glass" *ngFor="let o of recommended" [routerLink]="['/offers', o.id]">
+        <div class="img">
+          <img *ngIf="uploadUrl(o.imageUrl)" [src]="uploadUrl(o.imageUrl)!" alt="" loading="lazy" />
+          <div *ngIf="!uploadUrl(o.imageUrl)" class="ph">✨</div>
+          <span class="tag foryou">For you</span>
+        </div>
+        <div class="body">
+          <div class="title">{{ o.title }}</div>
+          <div class="desc">{{ o.description || '—' }}</div>
+          <div class="meta">{{ o.startDate || '—' }} → {{ o.endDate || '—' }}</div>
+        </div>
+      </a>
+    </div>
+  </section>
+
+  <section class="all" *ngIf="!loading && !error">
+    <div class="sec-head">
+      <h2>Offres actives</h2>
+      <span class="hint">{{ offers.length }} résultat(s)</span>
+    </div>
+
+    <div class="grid">
+      <a class="card glass" *ngFor="let o of offers" [routerLink]="['/offers', o.id]">
+        <div class="img">
+          <img *ngIf="uploadUrl(o.imageUrl)" [src]="uploadUrl(o.imageUrl)!" alt="" loading="lazy" />
+          <div *ngIf="!uploadUrl(o.imageUrl)" class="ph">📚</div>
+          <ng-container [ngSwitch]="badge(o)">
+            <span *ngSwitchCase="'new'" class="tag new">New</span>
+            <span *ngSwitchCase="'limited'" class="tag lim">Limited</span>
+            <span *ngSwitchCase="'for-you'" class="tag foryou">For you</span>
+          </ng-container>
+        </div>
+        <div class="body">
+          <div class="top">
+            <div class="title">{{ o.title }}</div>
+            <span class="type">{{ o.type }}</span>
+          </div>
+          <div class="desc">{{ o.description || '—' }}</div>
+          <div class="meta">{{ o.startDate || '—' }} → {{ o.endDate || '—' }}</div>
+          <div class="cta-row">
+            <span class="btn">Voir détails</span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+</section>
+

@@ -1,0 +1,252 @@
+/* Shell commun : admin-shell.shared.css */
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 980px) {
+  .grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
+@media (max-width: 560px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.kpi {
+  border-radius: 18px;
+  padding: 1rem;
+  grid-column: span 3;
+}
+
+@media (max-width: 980px) {
+  .kpi {
+    grid-column: span 3;
+  }
+}
+
+@media (max-width: 560px) {
+  .kpi {
+    grid-column: auto;
+  }
+}
+
+.kpi-head {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+}
+
+.kpi-ico {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: rgba(0, 212, 255, 0.95);
+}
+
+.kpi-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.kpi-label {
+  font-family: var(--font-heading);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.kpi-hint {
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.kpi-val {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  margin-top: 0.65rem;
+  letter-spacing: 0.02em;
+}
+
+.panel {
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.span-12 {
+  grid-column: span 12;
+}
+.span-8 {
+  grid-column: span 8;
+}
+.span-4 {
+  grid-column: span 4;
+}
+
+@media (max-width: 980px) {
+  .span-12 {
+    grid-column: span 6;
+  }
+  .span-8 {
+    grid-column: span 6;
+  }
+  .span-4 {
+    grid-column: span 6;
+  }
+}
+
+@media (max-width: 560px) {
+  .span-12,
+  .span-8,
+  .span-4 {
+    grid-column: auto;
+  }
+}
+
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.panel-head h2 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.hint {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.75rem;
+}
+
+@media (max-width: 980px) {
+  .actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+.action {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.85rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  text-decoration: none;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.03);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.action:hover {
+  transform: translateY(-1px);
+  border-color: rgba(0, 212, 255, 0.25);
+}
+
+.a-ico {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 212, 255, 0.08);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  color: rgba(0, 212, 255, 0.95);
+}
+
+.a-txt strong {
+  display: block;
+  font-family: var(--font-heading);
+}
+
+.a-txt em {
+  display: block;
+  font-style: normal;
+  font-size: 0.82rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.syslist {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.sys {
+  padding: 0.9rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.sys-lab {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.sys-val {
+  margin-top: 0.4rem;
+  font-family: var(--font-heading);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.table {
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.tr {
+  display: grid;
+  grid-template-columns: 64px 1.2fr 1.5fr 120px;
+  gap: 0.75rem;
+  padding: 0.8rem 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.tr:first-child {
+  border-top: none;
+}
+
+.tr.th {
+  color: rgba(255, 255, 255, 0.55);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  background: rgba(0, 0, 0, 0.18);
+}
+
+.r {
+  text-align: right;
+  font-family: var(--font-heading);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+@media (max-width: 560px) {
+  .tr {
+    grid-template-columns: 52px 1fr;
+    grid-auto-rows: auto;
+  }
+  .tr > div:nth-child(3),
+  .tr > div:nth-child(4) {
+    grid-column: 1 / -1;
+    text-align: left;
+  }
+}

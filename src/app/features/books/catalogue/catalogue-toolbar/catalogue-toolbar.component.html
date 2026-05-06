@@ -1,0 +1,50 @@
+<div class="toolbar glass">
+  <p class="counts">
+    {{
+      'CATALOGUE.SHOWING'
+        | translate : { x: showing || 0, y: total || 0 }
+    }}
+  </p>
+  <div class="search-wrap">
+    <input
+      type="search"
+      class="search"
+      [value]="searchValue"
+      (input)="onSearchInput($any($event.target).value)"
+      [placeholder]="'CATALOGUE.SEARCH_PLACEHOLDER' | translate"
+      autocomplete="off"
+    />
+  </div>
+  <div class="controls">
+    <label class="sort-label">
+      <span>{{ 'CATALOGUE.SORT_LABEL' | translate }}</span>
+      <select [value]="sort" (change)="onSortSelect($any($event.target).value)">
+        <option value="newest">{{ 'CATALOGUE.SORT_NEWEST' | translate }}</option>
+        <option value="title">{{ 'CATALOGUE.SORT_TITLE' | translate }}</option>
+        <option value="year">{{ 'CATALOGUE.SORT_YEAR' | translate }}</option>
+        <option value="rating">{{ 'CATALOGUE.SORT_RATING' | translate }}</option>
+      </select>
+    </label>
+    <div class="toggle">
+      <button
+        type="button"
+        class="tg"
+        [class.active]="viewMode === 'grid'"
+        (click)="setView('grid')"
+      >
+        {{ 'CATALOGUE.VIEW_GRID' | translate }}
+      </button>
+      <button
+        type="button"
+        class="tg"
+        [class.active]="viewMode === 'list'"
+        (click)="setView('list')"
+      >
+        {{ 'CATALOGUE.VIEW_LIST' | translate }}
+      </button>
+    </div>
+    <button type="button" class="filter-btn" (click)="openFilters.emit()">
+      {{ 'CATALOGUE.FILTERS' | translate }}
+    </button>
+  </div>
+</div>

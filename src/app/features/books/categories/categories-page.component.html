@@ -1,0 +1,27 @@
+<section class="pub-page">
+  <header class="pub-head">
+    <h1>{{ 'PUBLIC.CATEGORIES_TITLE' | translate }}</h1>
+    <p class="lead">{{ 'PUBLIC.CATEGORIES_LEAD' | translate }}</p>
+  </header>
+
+  <div class="loading" *ngIf="loading">{{ 'PUBLIC.LOADING' | translate }}</div>
+  <p class="err" *ngIf="error">{{ 'PUBLIC.LOAD_ERROR' | translate }}</p>
+
+  <div class="grid" *ngIf="!loading && !error">
+    <a
+      *ngFor="let c of categories"
+      class="card glass"
+      [class.card--visual]="c.imageUrl"
+      [routerLink]="['/catalogue']"
+      [queryParams]="{ category: c.id }"
+    >
+      <div class="card-visual" *ngIf="c.imageUrl as src">
+        <img [src]="uploadUrl(src)!" [alt]="c.name" loading="lazy" />
+        <div class="card-visual-shade"></div>
+      </div>
+      <h2>{{ c.name }}</h2>
+      <p class="desc" *ngIf="c.description">{{ c.description }}</p>
+      <span class="cta">{{ 'PUBLIC.BROWSE_CATEGORY' | translate }}</span>
+    </a>
+  </div>
+</section>

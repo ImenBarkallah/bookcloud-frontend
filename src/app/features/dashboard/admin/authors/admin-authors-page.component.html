@@ -1,0 +1,229 @@
+<section class="admin-layout admin-authors">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Auteurs">
+      <button type="button" class="topbtn" (click)="openCreate()">
+        <app-hero-icon name="plus" size="sm" />
+        <span>Ajouter</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Gestion des auteurs" subtitle="Cards · KPI · voir livres · édition · upload image" />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les auteurs.</div>
+
+        <div class="kpi-row" *ngIf="!loading && !error">
+          <div class="kpi glass">
+            <span class="kpi-ico" aria-hidden="true">👤</span>
+            <div>
+              <div class="kpi-val">{{ kpiAuthors() }}</div>
+              <div class="kpi-label">Total auteurs</div>
+            </div>
+          </div>
+          <div class="kpi glass">
+            <span class="kpi-ico" aria-hidden="true">📚</span>
+            <div>
+              <div class="kpi-val">{{ kpiTotalBooks() }}</div>
+              <div class="kpi-label">Nombre total de livres</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input [ngModel]="q" (ngModelChange)="onQueryChange($event)" type="text" placeholder="Rechercher (nom, bio)..." />
+            </div>
+            <div class="count">
+              <span class="chip">{{ filtered.length }}</span>
+              <span class="muted">affiché(s)</span>
+              <span class="muted">· {{ authors.length }} au total</span>
+            </div>
+          </div>
+          <div class="tool-right">
+            <div class="seg" role="group" aria-label="Affichage">
+              <button type="button" class="seg-btn" [class.on]="view === 'cards'" (click)="setView('cards')">Cards</button>
+              <button type="button" class="seg-btn" [class.on]="view === 'table'" (click)="setView('table')">Table</button>
+            </div>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!loading && !error && filtered.length === 0">Aucun auteur ne correspond aux filtres.</p>
+
+        <!-- Cards grid -->
+          <div class="cards" *ngIf="!loading && !error && view === 'cards' && filtered.length">
+          <article class="card glass" *ngFor="let a of filtered; trackBy: trackById">
+            <div class="card-head">
+              <div class="avatar">
+                <img *ngIf="a.imageUrl" [src]="uploadUrl(a.imageUrl)" alt="" loading="lazy" />
+                <div *ngIf="!a.imageUrl" class="avatar-ph">👤</div>
+              </div>
+              <div class="meta">
+                <strong>{{ a.name }}</strong>
+                <div class="muted small">{{ booksCount(a) }} livre(s)</div>
+              </div>
+            </div>
+            <p class="bio muted" *ngIf="a.bio">{{ a.bio }}</p>
+            <div class="card-actions">
+              <button type="button" class="ghost" (click)="openBooks(a)">Voir livres</button>
+              <button type="button" class="ghost ghost--ico" (click)="openView(a)" title="Détails">
+                <app-hero-icon name="eye" size="sm" />
+              </button>
+              <button type="button" class="ghost ghost--ico" (click)="openEdit(a)" title="Modifier">
+                <app-hero-icon name="pencil-square" size="sm" />
+              </button>
+              <button type="button" class="ghost danger ghost--ico" (click)="openDelete(a)" title="Supprimer">
+                <app-hero-icon name="trash" size="sm" />
+              </button>
+            </div>
+          </article>
+        </div>
+
+        <!-- Table -->
+        <section class="table glass" *ngIf="!loading && !error && view === 'table' && filtered.length">
+          <div class="tr th">
+            <div>Image</div>
+            <div>Nom</div>
+            <div>Bio</div>
+            <div>Nb livres</div>
+            <div class="r">Actions</div>
+          </div>
+          <div class="tr row" *ngFor="let a of filtered; trackBy: trackById">
+            <div>
+              <div class="avatar sm">
+                <img *ngIf="a.imageUrl" [src]="uploadUrl(a.imageUrl)" alt="" loading="lazy" />
+                <div *ngIf="!a.imageUrl" class="avatar-ph">👤</div>
+              </div>
+            </div>
+            <div><strong>{{ a.name }}</strong></div>
+            <div class="muted small">{{ a.bio || '—' }}</div>
+            <div class="muted">{{ booksCount(a) }}</div>
+            <div class="r actions">
+              <button type="button" class="ghost" (click)="openBooks(a)">Voir livres</button>
+              <button type="button" class="ghost ghost--ico" (click)="openEdit(a)" title="Modifier">
+                <app-hero-icon name="pencil-square" size="sm" />
+              </button>
+              <button type="button" class="ghost danger ghost--ico" (click)="openDelete(a)" title="Supprimer">
+                <app-hero-icon name="trash" size="sm" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Add/Edit/View -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="modalOpen" role="dialog" aria-modal="true" aria-label="Auteur">
+  <div class="modal-card glass modal-card--wide" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>
+          {{ modalKind === 'create' ? 'Ajouter un auteur' : modalKind === 'edit' ? 'Modifier l’auteur' : 'Détails auteur' }}
+        </strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeModal()" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <form class="form" (submit)="$event.preventDefault(); modalKind !== 'view' && save()">
+        <div class="grid2">
+          <label>
+            <span>Nom</span>
+            <input type="text" [(ngModel)]="formName" name="name" [disabled]="modalKind === 'view'" />
+          </label>
+          <label>
+            <span>Pays</span>
+            <input type="text" [(ngModel)]="formCountry" name="country" [disabled]="modalKind === 'view'" />
+          </label>
+          <label class="span2">
+            <span>Bio</span>
+            <textarea [(ngModel)]="formBio" name="bio" rows="4" [disabled]="modalKind === 'view'"></textarea>
+          </label>
+          <div class="span2">
+            <span>Image</span>
+            <div class="imgpick">
+              <div class="avatar lg">
+                <img *ngIf="previewObjectUrl" [src]="previewObjectUrl" alt="" />
+                <img *ngIf="!previewObjectUrl && currentImageUrl" [src]="uploadUrl(currentImageUrl)" alt="" />
+                <div *ngIf="!previewObjectUrl && !currentImageUrl" class="avatar-ph">👤</div>
+              </div>
+              <div class="imgbtns" *ngIf="modalKind !== 'view'">
+                <input type="file" accept="image/*" (change)="onPickImage($any($event.target).files?.[0] ?? null)" />
+              </div>
+            </div>
+          </div>
+        </div>
+        <footer class="modal-foot">
+          <button type="button" class="ghost" (click)="closeModal()">Fermer</button>
+          <button type="button" class="topbtn" *ngIf="modalKind !== 'view'" [disabled]="pendingSave" (click)="save()">
+            Enregistrer
+          </button>
+        </footer>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-backdrop" *ngIf="deleteModalOpen" (click)="closeDelete()" aria-hidden="true"></div>
+<div class="modal" *ngIf="deleteModalOpen" role="dialog" aria-modal="true" aria-label="Supprimer">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>Supprimer</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDelete()" [disabled]="pendingDelete" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="delete-msg" *ngIf="deleteTarget as d">
+        Supprimer l’auteur <span class="mono">{{ d.name }}</span> ?
+      </p>
+      <p class="muted small">Cette action est irréversible.</p>
+    </div>
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeDelete()" [disabled]="pendingDelete">Annuler</button>
+      <button type="button" class="ghost danger" (click)="confirmDelete()" [disabled]="pendingDelete">Supprimer</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Voir livres -->
+<div class="modal-backdrop" *ngIf="booksModalOpen" (click)="closeBooks()" aria-hidden="true"></div>
+<div class="modal" *ngIf="booksModalOpen" role="dialog" aria-modal="true" aria-label="Livres de l’auteur">
+  <div class="modal-card glass modal-card--wide" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong *ngIf="booksTarget as a">Livres de {{ a.name }}</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeBooks()" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body">
+      <div class="books-list">
+        <div class="bookrow" *ngFor="let b of booksForTarget()">
+          <div class="thumb sm" *ngIf="b.coverUrl"><img [src]="uploadUrl(b.coverUrl)" alt="" /></div>
+          <div class="thumb sm thumb--ph" *ngIf="!b.coverUrl">📘</div>
+          <div>
+            <strong>{{ b.title }}</strong>
+            <div class="muted small">{{ b.availableCopies }}/{{ b.totalCopies }}</div>
+          </div>
+        </div>
+        <p class="muted" *ngIf="booksForTarget().length === 0">Aucun livre pour cet auteur.</p>
+      </div>
+    </div>
+  </div>
+</div>
+

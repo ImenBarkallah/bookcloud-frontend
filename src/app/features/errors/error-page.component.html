@@ -1,0 +1,50 @@
+<section class="error-root" [attr.data-kind]="kind">
+  <div class="bg-blobs" aria-hidden="true">
+    <div class="blob blob--a"></div>
+    <div class="blob blob--b"></div>
+    <div class="blob blob--c"></div>
+  </div>
+
+  <div class="error-inner">
+    <div class="error-card glass">
+      <div class="error-code-wrap">
+        <span class="error-code">
+          <ng-container [ngSwitch]="kind">
+            <span *ngSwitchCase="'not-found'">404</span>
+            <span *ngSwitchCase="'forbidden'">403</span>
+            <span *ngSwitchCase="'server'">500</span>
+          </ng-container>
+        </span>
+        <span class="error-glow" aria-hidden="true"></span>
+      </div>
+
+      <h1 class="error-title">
+        <ng-container [ngSwitch]="kind">
+          <span *ngSwitchCase="'not-found'">{{ 'ERROR_PAGE.NOT_FOUND.TITLE' | translate }}</span>
+          <span *ngSwitchCase="'forbidden'">{{ 'ERROR_PAGE.FORBIDDEN.TITLE' | translate }}</span>
+          <span *ngSwitchCase="'server'">{{ 'ERROR_PAGE.SERVER.TITLE' | translate }}</span>
+        </ng-container>
+      </h1>
+
+      <p class="error-desc">
+        <ng-container [ngSwitch]="kind">
+          <span *ngSwitchCase="'not-found'">{{ 'ERROR_PAGE.NOT_FOUND.DESC' | translate }}</span>
+          <span *ngSwitchCase="'forbidden'">{{ 'ERROR_PAGE.FORBIDDEN.DESC' | translate }}</span>
+          <span *ngSwitchCase="'server'">{{ 'ERROR_PAGE.SERVER.DESC' | translate }}</span>
+        </ng-container>
+      </p>
+
+      <div class="error-actions">
+        <button type="button" class="btn btn--primary" (click)="goHome()">
+          {{ 'ERROR_PAGE.CTA_HOME' | translate }}
+        </button>
+        <button type="button" class="btn btn--ghost" (click)="goBack()">
+          {{ 'ERROR_PAGE.CTA_BACK' | translate }}
+        </button>
+        <button *ngIf="kind === 'server'" type="button" class="btn btn--secondary" (click)="retry()">
+          {{ 'ERROR_PAGE.CTA_RETRY' | translate }}
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

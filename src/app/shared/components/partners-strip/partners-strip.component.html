@@ -1,0 +1,74 @@
+<section class="partners-section home-section">
+  <div class="rings-decor" aria-hidden="true">
+    <span class="ring"></span>
+    <span class="ring"></span>
+    <span class="ring"></span>
+  </div>
+
+  <div class="section-header centered" [class.partners-enter-visible]="sectionEntered">
+    <span class="section-badge">{{ 'HOME.PARTNERS.BADGE' | translate }}</span>
+    <h2 class="section-title">{{ 'HOME.PARTNERS.TITLE' | translate }}</h2>
+    <p class="section-subtitle partners-sub-split">{{ 'HOME.PARTNERS.SUBTITLE' | translate }}</p>
+  </div>
+
+  <div class="partners-divider" *ngIf="partners.length && !partnersLoadError" aria-hidden="true">
+    <span class="partners-divider__line"></span>
+    <svg class="partners-divider__mark" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="12" cy="12" r="3.5" stroke="rgba(255,255,255,0.1)" stroke-width="1" />
+      <path d="M12 5v14M5 12h14" stroke="rgba(255,255,255,0.1)" stroke-width="0.6" />
+      <path d="M12 3l2 4h-4l2-4z" fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.1)" stroke-width="0.5" />
+    </svg>
+    <span class="partners-divider__line"></span>
+  </div>
+
+  <div class="partners-carousel-zone" [class.partners-enter-visible]="sectionEntered">
+    <p *ngIf="partnersLoadError" class="partners-hint partners-hint--error" role="alert">
+      {{ 'HOME.PARTNERS.ERROR_LOAD' | translate }}
+    </p>
+    <p *ngIf="!partnersLoadError && partnersLoaded && !partners.length" class="partners-hint">
+      {{ 'HOME.PARTNERS.EMPTY' | translate }}
+    </p>
+    <p *ngIf="!partnersLoadError && partnersLoaded && !partners.length" class="partners-hint partners-hint--sub">
+      {{ 'HOME.PARTNERS.HINT_ARCHIVED' | translate }}
+    </p>
+
+    <canvas class="particle-line-canvas" height="24" *ngIf="partners.length"></canvas>
+
+    <!-- Une seule bande : tous les partenaires (ordre API : GOLD → SILVER → BRONZE), GSAP marquee -->
+    <div class="partners-marquee" *ngIf="partners.length">
+      <div class="partners-marquee__viewport">
+        <div class="partners-marquee__track" data-partners-marquee="main">
+          <div class="partners-marquee__group">
+            <a
+              *ngFor="let p of partners; trackBy: trackPartner"
+              class="partner-card"
+              [href]="p.website || '#'"
+              target="_blank"
+              rel="noopener"
+            >
+              <span class="partner-card__inner">
+                <img *ngIf="logoSrc(p) as src" [src]="src" [alt]="p.name" loading="lazy" />
+                <span *ngIf="!logoSrc(p)" class="partner-card__fallback">{{ p.name }}</span>
+              </span>
+            </a>
+          </div>
+          <div class="partners-marquee__group" aria-hidden="true">
+            <a
+              *ngFor="let p of partners; trackBy: trackPartner"
+              class="partner-card"
+              [href]="p.website || '#'"
+              tabindex="-1"
+              target="_blank"
+              rel="noopener"
+            >
+              <span class="partner-card__inner">
+                <img *ngIf="logoSrc(p) as src" [src]="src" [alt]="''" loading="lazy" />
+                <span *ngIf="!logoSrc(p)" class="partner-card__fallback">{{ p.name }}</span>
+              </span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

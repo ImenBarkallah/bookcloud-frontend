@@ -1,0 +1,143 @@
+.catalogue-layout {
+  min-height: 60vh;
+  padding-bottom: 3rem;
+}
+
+.catalogue-body {
+  display: flex;
+  gap: 1.5rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 3vw, 2rem);
+  position: relative;
+}
+
+.catalogue-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.backdrop-filters {
+  display: none;
+}
+
+@media (max-width: 960px) {
+  .backdrop-filters {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 10, 15, 0.65);
+    z-index: 70;
+  }
+}
+
+.books-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+.books-grid.list {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 1100px) {
+  .books-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .books-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1.25rem;
+}
+
+@media (max-width: 1100px) {
+  .skeleton-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.sk-card {
+  border-radius: 18px;
+  min-height: 380px;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.sk-card.sm {
+  min-height: 120px;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.06) 45%,
+    transparent 80%
+  );
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.empty-book {
+  font-size: 3rem;
+  animation: bounceBook 1.6s ease-in-out infinite;
+}
+
+@keyframes bounceBook {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+.sentinel {
+  grid-column: 1 / -1;
+  height: 24px;
+}
+
+.more-skel {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}

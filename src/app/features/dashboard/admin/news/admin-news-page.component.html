@@ -1,0 +1,167 @@
+<section class="admin-layout admin-news">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="News & annonces" />
+
+    <div class="admin-scroll">
+      <app-admin-page-head
+        title="News & Announcements"
+        subtitle="Créer, modifier, activer/désactiver et supprimer des annonces, événements et tips"
+      />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+
+        <div class="toolbar glass" *ngIf="!loading">
+          <div class="tool-left">
+            <div class="count">
+              <span class="chip">{{ rows.length }}</span>
+              <span class="muted">élément(s)</span>
+            </div>
+          </div>
+          <div class="tool-right">
+            <button type="button" class="topbtn" (click)="openCreate()">Ajouter</button>
+          </div>
+        </div>
+
+        <div class="table glass" *ngIf="!loading">
+          <div class="t-head">
+            <div>Image</div>
+            <div>Titre</div>
+            <div>Type</div>
+            <div>Date</div>
+            <div>Actif</div>
+            <div>Actions</div>
+          </div>
+
+          <div class="t-row" *ngFor="let r of rows; trackBy: trackById">
+            <div class="cell img">
+              <img *ngIf="r.imageUrl" [src]="uploadUrl(r.imageUrl)!" alt="" />
+              <div class="ph" *ngIf="!r.imageUrl"><app-hero-icon name="bookmark" size="md" /></div>
+            </div>
+
+            <div class="cell title">
+              <div class="t">{{ r.title }}</div>
+              <div class="c muted">{{ r.content }}</div>
+            </div>
+
+            <div class="cell">
+              <span [class]="typeChip(r.type).cls">{{ typeChip(r.type).label }}</span>
+            </div>
+
+            <div class="cell">{{ dateLabel(r.createdAt) }}</div>
+
+            <div class="cell">
+              <label class="sw">
+                <input type="checkbox" [checked]="r.active" (change)="toggleActive(r)" />
+                <span class="sw-track"></span>
+              </label>
+            </div>
+
+            <div class="cell actions">
+              <button type="button" class="ghost" (click)="openEdit(r)">Modifier</button>
+              <button type="button" class="danger" (click)="openDelete(r)">Supprimer</button>
+            </div>
+          </div>
+
+          <p class="empty" *ngIf="rows.length === 0">Aucune news pour le moment.</p>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Modal Add/Edit -->
+<div class="modal" *ngIf="modalOpen">
+  <div class="backdrop" (click)="closeModal()"></div>
+  <div class="modal-card glass" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div class="modal-title">
+        <strong>{{ modalKind === 'create' ? 'Ajouter une news' : 'Modifier une news' }}</strong>
+      </div>
+      <button type="button" class="iconx" (click)="closeModal()" [attr.aria-label]="'Fermer'">
+        <app-hero-icon name="x-mark" size="md" />
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <label class="field">
+        <span>Titre</span>
+        <input [(ngModel)]="formTitle" type="text" placeholder="Titre…" />
+      </label>
+
+      <label class="field">
+        <span>Contenu</span>
+        <textarea [(ngModel)]="formContent" rows="5" placeholder="Contenu…"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Type</span>
+        <select [(ngModel)]="formType">
+          <option *ngFor="let o of typeOptions" [ngValue]="o.id">{{ o.label }}</option>
+        </select>
+      </label>
+
+      <label class="field row-inline">
+        <span>Actif</span>
+        <label class="sw">
+          <input type="checkbox" [(ngModel)]="formActive" />
+          <span class="sw-track"></span>
+        </label>
+      </label>
+
+      <!-- Image (URL today; preview if a file is selected for future support) -->
+      <div class="field">
+        <span>Image</span>
+        <div class="img-input">
+          <input
+            #newsImgInput
+            type="file"
+            accept="image/*"
+            (change)="onPickImage($any($event.target).files?.[0] ?? null)"
+          />
+          <button type="button" class="img-btn" (click)="$any(newsImgInput).click()">Choisir une image</button>
+          <span class="img-name" *ngIf="imageFile">{{ imageFile.name }}</span>
+          <span class="img-name muted" *ngIf="!imageFile">Utiliser une URL Cloudinary existante (actuel)</span>
+          <button type="button" class="img-x" (click)="clearPendingImageOnly()" [disabled]="!imageFile" aria-label="Clear">
+            <app-hero-icon name="x-mark" size="sm" />
+          </button>
+        </div>
+
+        <div class="img-preview" *ngIf="previewObjectUrl || currentImageUrl">
+          <img *ngIf="previewObjectUrl" [src]="previewObjectUrl" alt="" />
+          <img *ngIf="!previewObjectUrl && currentImageUrl" [src]="uploadUrl(currentImageUrl)!" alt="" />
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button type="button" class="ghost" (click)="closeModal()">Annuler</button>
+      <button type="button" class="topbtn" [disabled]="pendingSave" (click)="save()">
+        {{ modalKind === 'create' ? 'Enregistrer' : 'Modifier' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal" *ngIf="deleteOpen">
+  <div class="backdrop" (click)="closeDelete()"></div>
+  <div class="modal-card glass" role="dialog" aria-modal="true">
+    <div class="modal-head">
+      <div class="modal-title"><strong>Supprimer</strong></div>
+      <button type="button" class="iconx" (click)="closeDelete()" [attr.aria-label]="'Fermer'">
+        <app-hero-icon name="x-mark" size="md" />
+      </button>
+    </div>
+    <div class="modal-body">
+      <p>Supprimer <strong>{{ deleteTarget?.title }}</strong> ?</p>
+    </div>
+    <div class="modal-foot">
+      <button type="button" class="ghost" (click)="closeDelete()">Annuler</button>
+      <button type="button" class="danger" [disabled]="pendingDelete" (click)="confirmDelete()">Supprimer</button>
+    </div>
+  </div>
+</div>
+

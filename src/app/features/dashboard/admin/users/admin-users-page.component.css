@@ -1,0 +1,160 @@
+.admin-users .toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 14px;
+  gap: 12px;
+}
+
+.admin-users .tool-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.admin-users .search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  min-width: min(520px, 70vw);
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.admin-users .search input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+}
+
+.admin-users .count {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.admin-users .table {
+  overflow: hidden;
+}
+
+.admin-users .tr {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1.6fr 1.1fr 0.9fr 0.9fr;
+  gap: 12px;
+  padding: 12px 14px;
+  align-items: center;
+}
+
+.admin-users .th {
+  font-weight: 700;
+  opacity: 0.9;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.admin-users .row {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.admin-users .row:last-child {
+  border-bottom: none;
+}
+
+.admin-users .r {
+  text-align: right;
+}
+
+.admin-users .actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.admin-users .pill {
+  display: inline-flex;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.admin-users .pill.ok {
+  background: rgba(34, 197, 94, 0.18);
+  border-color: rgba(34, 197, 94, 0.35);
+}
+
+.admin-users .pill.bad {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.admin-users .role {
+  width: 100%;
+  border-radius: 10px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: inherit;
+}
+
+.admin-users .mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.admin-users .strong {
+  font-weight: 800;
+}
+
+.admin-users .muted {
+  opacity: 0.82;
+}
+
+.admin-users .small {
+  font-size: 12px;
+}
+
+.admin-users .empty {
+  opacity: 0.85;
+  padding: 18px 4px;
+}
+
+/* Modal styling (was missing → looked unstyled) */
+.admin-users .modal-card {
+  padding: 14px;
+  border-radius: 18px;
+}
+
+.admin-users .form {
+  display: grid;
+  gap: 12px;
+}
+
+.admin-users .form label span {
+  display: block;
+  font-weight: 800;
+  opacity: 0.9;
+  margin-bottom: 6px;
+}
+
+.admin-users .form input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(0, 0, 0, 0.22);
+  color: inherit;
+  outline: none;
+}
+
+.admin-users .modal-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+

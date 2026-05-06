@@ -1,0 +1,19 @@
+<section class="hero">
+  <ng-container *ngIf="useThree">
+    <div class="hero-three" #canvasHost></div>
+  </ng-container>
+  <div class="hero-fallback" *ngIf="!useThree"></div>
+  <div class="hero-inner">
+    <nav class="crumb" aria-label="Breadcrumb">
+      <a routerLink="/">{{ 'CATALOGUE.BREADCRUMB_HOME' | translate }}</a>
+      <span class="sep">/</span>
+      <span>{{ 'CATALOGUE.BREADCRUMB_CURRENT' | translate }}</span>
+    </nav>
+    <h1 class="hero-title" #titleSplit>
+      <span class="line">
+        <span class="explore">{{ 'CATALOGUE.HERO_EXPLORE' | translate }}</span>
+        <span class="gradient">{{ 'CATALOGUE.HERO_HIGHLIGHT' | translate }}</span>
+      </span>
+    </h1>
+  </div>
+</section>

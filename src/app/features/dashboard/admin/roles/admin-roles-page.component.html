@@ -1,0 +1,73 @@
+<section class="admin-layout admin-roles">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Rôles & accès" />
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Gestion des rôles & accès" subtitle="Permissions fines par module" />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+
+        <div class="grid" *ngIf="!loading">
+          <section class="card glass" *ngFor="let r of [Role.ADMIN, Role.BIBLIOTHECAIRE, Role.USER]">
+            <header class="card-head">
+              <div>
+                <div class="chip">{{ r }}</div>
+                <div class="title">{{ r === Role.BIBLIOTHECAIRE ? 'LIBRARIAN' : r }}</div>
+              </div>
+              <button type="button" class="topbtn" (click)="save(r)" [disabled]="pendingSave[r]">
+                <app-hero-icon name="check" size="sm" />
+                <span>Enregistrer</span>
+              </button>
+            </header>
+
+            <div class="form">
+              <label class="field">
+                <span>Label</span>
+                <input [(ngModel)]="label[r]" [disabled]="r === Role.ADMIN" />
+              </label>
+
+              <div class="wild" *ngIf="r === Role.ADMIN">
+                <label class="check">
+                  <input type="checkbox" [checked]="has(r, '*')" (change)="setWildcard(r, $any($event.target).checked)" />
+                  Accès total (*)
+                </label>
+                <p class="hint">ADMIN utilise généralement <code>*</code> (tout).</p>
+              </div>
+
+              <div class="perm-table" *ngIf="r !== Role.ADMIN">
+                <div class="perm-head">
+                  <div>Module</div>
+                  <div>READ</div>
+                  <div>WRITE</div>
+                  <div>DELETE</div>
+                </div>
+
+                <div class="perm-row" *ngFor="let m of modules">
+                  <div class="mod">{{ m[1].label }}</div>
+                  <label class="cell">
+                    <input type="checkbox" [checked]="has(r, m[1].perms.READ)" (change)="toggle(r, m[1].perms.READ)" />
+                  </label>
+                  <label class="cell">
+                    <input type="checkbox" [checked]="has(r, m[1].perms.WRITE)" (change)="toggle(r, m[1].perms.WRITE)" />
+                  </label>
+                  <label class="cell">
+                    <input type="checkbox" [checked]="has(r, m[1].perms.DELETE)" (change)="toggle(r, m[1].perms.DELETE)" />
+                  </label>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <p class="note glass" *ngIf="!loading">
+          Note: l’app utilise actuellement <strong>les rôles</strong> (ADMIN / LIBRARIAN / USER) pour sécuriser les routes et
+          l’API. Les permissions fines servent aux contrôles UI (boutons/modules) et peuvent être étendues côté backend plus tard.
+        </p>
+      </main>
+    </div>
+  </div>
+</section>
+

@@ -1,0 +1,57 @@
+<section class="hours-section home-section">
+  <div class="wave-top" aria-hidden="true"></div>
+
+  <div class="section-header centered">
+    <span class="section-badge">{{ 'HOME.HOURS.BADGE' | translate }}</span>
+    <h2 class="section-title">{{ 'HOME.HOURS.TITLE' | translate }}</h2>
+    <p class="section-subtitle">{{ 'HOME.HOURS.SUBTITLE' | translate }}</p>
+  </div>
+
+  <div class="branch-tabs" *ngIf="branches.length">
+    <button
+      type="button"
+      class="branch-tab"
+      *ngFor="let b of branches"
+      [class.active]="selectedId === b.id"
+      (click)="selectTab(b.id)"
+    >
+      {{ b.name }}
+    </button>
+  </div>
+
+  <div class="hours-layout" *ngIf="selected() as br">
+    <div class="hours-col">
+      <div class="status-badge">
+        <span class="open-dot"></span>
+        <span>{{ 'HOME.HOURS.STATUS_OPEN' | translate }}</span>
+      </div>
+      <table class="hours-table">
+        <tr *ngFor="let row of weekdays(); let i = index" [class.today]="i === todayLine()">
+          <td>{{ row.day }}</td>
+          <td>{{ row.hours }}</td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="branch-info-card">
+      <h3>{{ br.name }}</h3>
+      <p class="addr">
+        <span aria-hidden="true">📍</span> {{ br.address }}
+      </p>
+      <p class="phone" *ngIf="br.phone">
+        <a [href]="'tel:' + br.phone">{{ br.phone }}</a>
+      </p>
+      <div class="feature-pills">
+        <span class="pill" *ngFor="let f of br.features ?? []">{{ f }}</span>
+      </div>
+      <canvas class="mini-globe" height="200"></canvas>
+      <a class="directions-btn" [href]="mapsUrl(br.address)" target="_blank" rel="noopener">
+        {{ 'HOME.HOURS.DIRECTIONS' | translate }}
+      </a>
+    </div>
+  </div>
+
+  <div class="skeleton-hours shimmer" *ngIf="!branches.length"></div>
+
+  <div class="wave-bottom" aria-hidden="true"></div>
+</section>

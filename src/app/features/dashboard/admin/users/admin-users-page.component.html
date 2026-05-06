@@ -1,0 +1,161 @@
+<section class="admin-layout admin-users">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Utilisateurs">
+      <button type="button" class="topbtn" (click)="load()">
+        <app-hero-icon name="arrow-path" size="sm" />
+        <span>Rafraîchir</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Gestion des utilisateurs" subtitle="Rôles · statut · édition" />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les utilisateurs.</div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input
+                [ngModel]="q"
+                (ngModelChange)="onQueryChange($event)"
+                type="text"
+                placeholder="Rechercher (nom, email, rôle)…"
+              />
+            </div>
+            <div class="count">
+              <span class="chip">{{ filtered.length }}</span>
+              <span class="muted">utilisateur(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!loading && !error && filtered.length === 0">Aucun utilisateur.</p>
+
+        <section class="table glass" *ngIf="!loading && !error && filtered.length">
+          <div class="tr th">
+            <div>Nom</div>
+            <div>Prénom</div>
+            <div>Email</div>
+            <div>Rôle</div>
+            <div>Statut</div>
+            <div class="r">Actions</div>
+          </div>
+
+          <div class="tr row" *ngFor="let u of filtered; trackBy: trackByUid">
+            <div class="mono strong">{{ u.lastName || '—' }}</div>
+            <div class="mono">{{ u.firstName || '—' }}</div>
+            <div class="muted">{{ u.email || '—' }}</div>
+            <div>
+              <select
+                class="role"
+                [ngModel]="u.role"
+                (ngModelChange)="changeRole(u, $event)"
+                [disabled]="u.role === Role.ADMIN"
+                title="Changer le rôle"
+              >
+                <option *ngFor="let r of roles" [ngValue]="r">{{ roleLabel(r) }}</option>
+              </select>
+              <div class="muted small">{{ u.displayName || fullName(u) }}</div>
+            </div>
+            <div>
+              <span class="pill" [class.ok]="!u.blocked" [class.bad]="u.blocked">
+                {{ u.blocked ? 'Désactivé' : 'Actif' }}
+              </span>
+            </div>
+            <div class="r actions">
+              <button type="button" class="ghost ghost--ico" (click)="openEdit(u)" title="Modifier">
+                <app-hero-icon name="pencil-square" size="sm" />
+              </button>
+              <button type="button" class="ghost ghost--ico" (click)="toggleBlocked(u)" title="Activer/Désactiver">
+                <app-hero-icon [name]="u.blocked ? 'lock-open' : 'lock-closed'" size="sm" />
+              </button>
+              <button
+                type="button"
+                class="ghost danger ghost--ico"
+                (click)="openDelete(u)"
+                title="Supprimer"
+                [disabled]="u.role === Role.ADMIN"
+              >
+                <app-hero-icon name="trash" size="sm" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Edit modal -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeEdit()" aria-hidden="true"></div>
+<div class="modal" *ngIf="modalOpen" role="dialog" aria-modal="true" aria-label="Utilisateur">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>Modifier utilisateur</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeEdit()" title="Fermer">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div class="state" *ngIf="modalLoading">Chargement…</div>
+      <form *ngIf="!modalLoading" class="form" (submit)="$event.preventDefault(); save()">
+        <label>
+          <span>Prénom</span>
+          <input type="text" [(ngModel)]="formFirstName" name="firstName" />
+        </label>
+        <label>
+          <span>Nom</span>
+          <input type="text" [(ngModel)]="formLastName" name="lastName" />
+        </label>
+        <label>
+          <span>Email</span>
+          <input type="email" [(ngModel)]="formEmail" name="email" />
+        </label>
+        <label>
+          <span>Display name</span>
+          <input type="text" [(ngModel)]="formDisplayName" name="displayName" />
+        </label>
+      </form>
+    </div>
+
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeEdit()">Annuler</button>
+      <button type="button" class="topbtn" [disabled]="pendingSave" (click)="save()">Enregistrer</button>
+    </footer>
+  </div>
+</div>
+
+<!-- Delete modal -->
+<div class="modal-backdrop" *ngIf="deleteOpen" (click)="closeDelete()" aria-hidden="true"></div>
+<div class="modal" *ngIf="deleteOpen" role="dialog" aria-modal="true" aria-label="Supprimer utilisateur">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>Supprimer</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDelete()" title="Fermer" [disabled]="pendingDelete">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="delete-msg" *ngIf="deleteTarget as u">
+        Supprimer <strong>{{ fullName(u) }}</strong> ({{ u.email || u.uid }}) ?
+      </p>
+    </div>
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeDelete()" [disabled]="pendingDelete">Annuler</button>
+      <button type="button" class="topbtn danger" (click)="confirmDelete()" [disabled]="pendingDelete">
+        Supprimer
+      </button>
+    </footer>
+  </div>
+</div>
+

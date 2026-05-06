@@ -1,0 +1,72 @@
+<div class="qv-root" *ngIf="bookId">
+  <div class="qv-backdrop" (click)="backdropClick($event)"></div>
+  <aside class="qv-panel glass">
+    <button
+      type="button"
+      class="qv-close"
+      (click)="close()"
+      [attr.aria-label]="'CATALOGUE.CLOSE' | translate"
+      [attr.title]="'CATALOGUE.CLOSE' | translate"
+    >
+      <app-hero-icon name="x-mark" size="md" />
+    </button>
+
+    <div *ngIf="loading" class="qv-loading">…</div>
+
+    <ng-container *ngIf="detail as d">
+      <div class="qv-animate cover-block">
+        <ng-container *ngIf="coverUrl(d) as src; else ph">
+          <img class="qv-cover-img" [src]="src" alt="" />
+        </ng-container>
+        <ng-template #ph>
+          <div class="qv-cover fallback"></div>
+        </ng-template>
+      </div>
+
+      <div class="qv-animate">
+        <h2>{{ d.title }}</h2>
+        <p class="author">{{ d.author }}</p>
+      </div>
+
+      <p class="qv-animate desc">
+        {{ (d.description?.trim() ? d.description : ('CATALOGUE.NO_DESCRIPTION' | translate)) }}
+      </p>
+
+      <div class="qv-animate grid-meta">
+        <div><span>ISBN</span><strong>{{ d.isbn || '—' }}</strong></div>
+        <div><span>{{ 'CATALOGUE.DRAWER_PAGES' | translate }}</span><strong>—</strong></div>
+        <div>
+          <span>{{ 'CATALOGUE.DRAWER_DETAILS' | translate }}</span>
+          <strong>{{ d.publisher || d.language || '—' }}</strong>
+        </div>
+        <div><span>{{ 'CATALOGUE.SORT_YEAR' | translate }}</span><strong>{{ d.publicationYear ?? '—' }}</strong></div>
+      </div>
+
+      <div class="qv-animate avail">
+        <span class="pill" [class.ok]="d.availableCopies > 0">{{
+          d.availableCopies > 0 ? ('CATALOGUE.IN_STOCK' | translate) : ('CATALOGUE.OUT_STOCK' | translate)
+        }}</span>
+      </div>
+
+      <div class="qv-animate actions">
+        <button type="button" class="primary" [disabled]="borrowing || d.availableCopies <= 0" (click)="borrow()">
+          {{ 'CATALOGUE.BORROW' | translate }}
+        </button>
+        <button type="button" class="ghost" [disabled]="borrowing || d.availableCopies > 0" (click)="reserve()">
+          {{ 'CATALOGUE.DRAWER_RESERVE' | translate }}
+        </button>
+      </div>
+
+      <section class="qv-animate similar" *ngIf="similar.length">
+        <h3>{{ 'CATALOGUE.DRAWER_SIMILAR' | translate }}</h3>
+        <div class="similar-row">
+          <article class="mini" *ngFor="let b of similar; trackBy: trackSimilar">
+            <img *ngIf="b.coverUrl" class="mini-cover" [src]="b.coverUrl" alt="" />
+            <div class="mini-cover ph" *ngIf="!b.coverUrl"></div>
+            <p>{{ b.title }}</p>
+          </article>
+        </div>
+      </section>
+    </ng-container>
+  </aside>
+</div>

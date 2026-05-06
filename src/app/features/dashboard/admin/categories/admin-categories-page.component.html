@@ -1,0 +1,314 @@
+<section class="admin-layout admin-categories">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Catégories" />
+
+    <div class="admin-scroll">
+      <app-admin-page-head
+        badge="ADMIN"
+        title="Gestion des catégories"
+        subtitle="Vue grille ou tableau · Recherche & pagination · Création, modification, consultation et suppression"
+      />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les catégories.</div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input [ngModel]="q" (ngModelChange)="onQueryChange($event)" type="text" placeholder="Rechercher une catégorie…" />
+            </div>
+            <div class="count">
+              <span class="chip">{{ totalElements }}</span>
+              <span class="muted">résultat(s)</span>
+            </div>
+            <label class="page-size">
+              <span class="muted">Par page</span>
+              <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+                <option *ngFor="let n of pageSizeOptions" [ngValue]="n">{{ n }}</option>
+              </select>
+            </label>
+          </div>
+
+          <div class="tool-right">
+            <div class="seg" role="group" aria-label="Affichage">
+              <button
+                type="button"
+                class="seg-btn seg-btn--ico"
+                [class.on]="view === 'grid'"
+                (click)="setView('grid')"
+                title="Grille"
+                aria-label="Grille"
+              >
+                <app-hero-icon name="squares-2x2" size="sm" />
+              </button>
+              <button
+                type="button"
+                class="seg-btn seg-btn--ico"
+                [class.on]="view === 'table'"
+                (click)="setView('table')"
+                title="Tableau"
+                aria-label="Tableau"
+              >
+                <app-hero-icon name="table-cells" size="sm" />
+              </button>
+            </div>
+            <button type="button" class="topbtn topbtn--ico" (click)="openCreateModal()" title="Ajouter" aria-label="Ajouter">
+              <app-hero-icon name="plus" size="sm" />
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && !error">
+          <p class="empty" *ngIf="categories.length === 0">Aucune catégorie ne correspond à la recherche.</p>
+
+          <div class="grid-cards" *ngIf="view === 'grid'">
+            <article class="cat-card glass" *ngFor="let c of categories; trackBy: trackById">
+              <div class="cat-banner" *ngIf="c.imageUrl as banner">
+                <img [src]="uploadUrl(banner)!" [alt]="c.name" loading="lazy" decoding="async" />
+                <div class="cat-banner-scrim"></div>
+              </div>
+              <div class="cat-banner cat-banner--empty" *ngIf="!c.imageUrl">
+                <div class="cat-banner-fallback"><app-hero-icon name="tag" size="lg" /></div>
+              </div>
+              <div class="cat-body">
+                <div class="cat-head">
+                  <div class="cat-meta">
+                    <div class="cat-name">{{ c.name }}</div>
+                    <div class="cat-id">ID: {{ c.id }}</div>
+                  </div>
+                </div>
+                <p class="cat-desc" *ngIf="c.description; else emptyDesc">{{ c.description }}</p>
+                <ng-template #emptyDesc>
+                  <p class="cat-desc muted">Aucune description.</p>
+                </ng-template>
+              </div>
+              <div class="cat-actions">
+                <button type="button" class="ghost ghost--ico" (click)="openViewModal(c)" title="Voir" aria-label="Voir">
+                  <app-hero-icon name="eye" size="sm" />
+                </button>
+                <button type="button" class="ghost ghost--ico" (click)="openEditModal(c)" title="Modifier" aria-label="Modifier">
+                  <app-hero-icon name="pencil-square" size="sm" />
+                </button>
+                <button type="button" class="ghost danger ghost--ico" (click)="openDeleteModal(c)" title="Supprimer" aria-label="Supprimer">
+                  <app-hero-icon name="trash" size="sm" />
+                </button>
+              </div>
+            </article>
+          </div>
+
+          <section class="table glass" *ngIf="view === 'table'">
+            <div class="tr th">
+              <div class="thumb-col"></div>
+              <div>Nom</div>
+              <div>Description</div>
+              <div>ID</div>
+              <div class="r">Actions</div>
+            </div>
+            <div class="tr cat-row" *ngFor="let c of categories; trackBy: trackById">
+              <div class="thumb-cell">
+                <img *ngIf="c.imageUrl as src" [src]="uploadUrl(src)!" [alt]="c.name" />
+                <span *ngIf="!c.imageUrl" class="thumb-ph"><app-hero-icon name="tag" size="sm" /></span>
+              </div>
+              <div class="strong">{{ c.name }}</div>
+              <div class="muted">{{ c.description || '—' }}</div>
+              <div class="mono">{{ c.id }}</div>
+              <div class="r cat-actions-inline">
+                <button type="button" class="ghost ghost--ico" (click)="openViewModal(c)" title="Voir" aria-label="Voir">
+                  <app-hero-icon name="eye" size="sm" />
+                </button>
+                <button type="button" class="ghost ghost--ico" (click)="openEditModal(c)" title="Modifier" aria-label="Modifier">
+                  <app-hero-icon name="pencil-square" size="sm" />
+                </button>
+                <button type="button" class="ghost danger ghost--ico" (click)="openDeleteModal(c)" title="Supprimer" aria-label="Supprimer">
+                  <app-hero-icon name="trash" size="sm" />
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <nav class="pager glass" *ngIf="totalElements > 0" aria-label="Pagination">
+            <button type="button" class="ghost" (click)="prevPage()" [disabled]="page <= 0">Précédent</button>
+            <span class="pager-info">
+              Page <strong>{{ page + 1 }}</strong> / <strong>{{ totalPages || 1 }}</strong>
+              <span class="muted">· {{ pageSize }} par page</span>
+            </span>
+            <button type="button" class="ghost" (click)="nextPage()" [disabled]="totalPages === 0 || page >= totalPages - 1">
+              Suivant
+            </button>
+          </nav>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Modal: créer / modifier / voir -->
+<div class="modal-backdrop" *ngIf="categoryModalOpen" (click)="closeCategoryModal()" aria-hidden="true"></div>
+<div
+  class="modal"
+  *ngIf="categoryModalOpen"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-label]="
+    categoryModalKind === 'create'
+      ? 'Ajouter une catégorie'
+      : categoryModalKind === 'edit'
+        ? 'Modifier la catégorie'
+        : 'Détail de la catégorie'
+  "
+>
+  <div class="modal-card glass" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong *ngIf="categoryModalKind === 'create'">Ajouter une catégorie</strong>
+        <strong *ngIf="categoryModalKind === 'edit'">Modifier la catégorie</strong>
+        <strong *ngIf="categoryModalKind === 'view'">Détail de la catégorie</strong>
+      </div>
+      <button
+        type="button"
+        class="ghost ghost--ico"
+        (click)="closeCategoryModal()"
+        title="Fermer"
+        aria-label="Fermer"
+      >
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div class="state" *ngIf="modalDetailLoading">Chargement…</div>
+      <ng-container *ngIf="!modalDetailLoading">
+        <div class="modal-field" *ngIf="categoryModalKind !== 'create' && editingId">
+          <span class="muted">ID</span>
+          <div class="mono modal-read">{{ editingId }}</div>
+        </div>
+        <label class="modal-field">
+          <span class="muted">Nom</span>
+          <input
+            [(ngModel)]="formName"
+            placeholder="Nom de la catégorie"
+            [readonly]="categoryModalKind === 'view'"
+          />
+        </label>
+        <label class="modal-field">
+          <span class="muted">Description</span>
+          <textarea
+            [(ngModel)]="formDescription"
+            rows="4"
+            placeholder="Description (optionnelle)"
+            [readonly]="categoryModalKind === 'view'"
+          ></textarea>
+        </label>
+
+        <div class="modal-image-block" *ngIf="categoryModalKind !== 'view' || modalImageSrc()">
+          <div class="modal-preview" *ngIf="modalImageSrc() as src">
+            <div class="muted preview-label">Visuel</div>
+            <div class="preview-frame">
+              <img [src]="src" [alt]="formName || 'Catégorie'" />
+              <button
+                *ngIf="categoryModalKind !== 'view' && (imageFile || previewObjectUrl)"
+                type="button"
+                class="img-clear"
+                (click)="clearPendingImageOnly()"
+                title="Annuler l'image"
+                aria-label="Annuler l'image"
+              >
+                <app-hero-icon name="x-mark" size="sm" />
+              </button>
+            </div>
+          </div>
+
+          <div class="img-input" *ngIf="categoryModalKind !== 'view'">
+            <div class="muted img-hint">Image · png, jpg, webp ou svg</div>
+            <div class="img-row">
+              <input
+                #catImgInput
+                class="img-native"
+                type="file"
+                accept=".png,.jpg,.jpeg,.webp,.svg"
+                (change)="onCategoryImageSelected($any($event.target).files)"
+              />
+              <button type="button" class="img-btn" (click)="catImgInput.click()">
+                <app-hero-icon name="plus" size="sm" />
+                <span>{{ imageFile ? 'Changer' : 'Choisir' }}</span>
+              </button>
+              <div class="img-name" *ngIf="imageFile; else noFileName">{{ imageFile.name }}</div>
+              <ng-template #noFileName>
+                <div class="img-name muted">Aucun fichier</div>
+              </ng-template>
+              <button
+                *ngIf="imageFile"
+                type="button"
+                class="img-x"
+                (click)="clearPendingImageOnly()"
+                title="Annuler"
+                aria-label="Annuler"
+              >
+                <app-hero-icon name="x-mark" size="sm" />
+              </button>
+            </div>
+          </div>
+
+          <p class="muted small" *ngIf="categoryModalKind === 'edit' && currentImageUrl && !imageFile">
+            Une nouvelle image remplacera l’actuelle après enregistrement.
+          </p>
+        </div>
+      </ng-container>
+    </div>
+
+    <footer class="modal-foot">
+      <ng-container *ngIf="categoryModalKind === 'view'">
+        <button type="button" class="ghost" (click)="closeCategoryModal()">Fermer</button>
+        <button type="button" class="topbtn" (click)="switchViewToEdit()">Modifier</button>
+      </ng-container>
+      <ng-container *ngIf="categoryModalKind !== 'view'">
+        <button type="button" class="ghost" (click)="closeCategoryModal()" [disabled]="pendingSave">Annuler</button>
+        <button
+          type="button"
+          class="topbtn"
+          (click)="saveCategoryModal()"
+          [disabled]="pendingSave || modalDetailLoading"
+        >
+          {{ categoryModalKind === 'edit' ? 'Enregistrer' : 'Ajouter' }}
+        </button>
+      </ng-container>
+    </footer>
+  </div>
+</div>
+
+<!-- Modal: suppression -->
+<div class="modal-backdrop" *ngIf="deleteModalOpen" (click)="closeDeleteModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="deleteModalOpen" role="dialog" aria-modal="true" aria-label="Confirmer la suppression">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>Supprimer la catégorie</strong>
+      </div>
+      <button
+        type="button"
+        class="ghost ghost--ico"
+        (click)="closeDeleteModal()"
+        [disabled]="pendingDelete"
+        title="Fermer"
+        aria-label="Fermer"
+      >
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="delete-msg" *ngIf="deleteTarget as d">
+        Confirmer la suppression de <strong>{{ d.name }}</strong> ?
+        <span class="mono delete-id">({{ d.id }})</span>
+      </p>
+      <p class="muted small">Les livres déjà classés dans cette catégorie peuvent se retrouver sans libellé valide. Pensez à les reclasser avant suppression.</p>
+    </div>
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeDeleteModal()" [disabled]="pendingDelete">Annuler</button>
+      <button type="button" class="ghost danger" (click)="confirmDelete()" [disabled]="pendingDelete">Supprimer</button>
+    </footer>
+  </div>
+</div>

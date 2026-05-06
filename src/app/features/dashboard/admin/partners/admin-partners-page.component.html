@@ -1,0 +1,213 @@
+<section class="admin-layout admin-partners">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Partenaires" />
+
+    <div class="admin-scroll">
+      <app-admin-page-head
+        badge="ADMIN"
+        title="Partenaires & sponsors"
+        subtitle="Gestion des logos · Archive/désarchive · Affichage Home via API"
+      />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les partenaires.</div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input
+                [ngModel]="q"
+                (ngModelChange)="onQueryChange($event)"
+                type="text"
+                placeholder="Rechercher (nom / site / tier)…"
+              />
+            </div>
+
+            <button type="button" class="ghost" (click)="toggleShowArchived()">
+              {{ showArchived ? 'Masquer archivés' : 'Afficher archivés' }}
+            </button>
+
+            <label class="page-size">
+              <span class="muted">Par page</span>
+              <select [ngModel]="pageSize" (ngModelChange)="setPageSize($event)">
+                <option *ngFor="let n of pageSizeOptions" [ngValue]="n">{{ n }}</option>
+              </select>
+            </label>
+
+            <div class="seg">
+              <button type="button" class="seg-btn" [class.on]="view === 'grid'" (click)="setView('grid')">
+                Grille
+              </button>
+              <button type="button" class="seg-btn" [class.on]="view === 'table'" (click)="setView('table')">
+                Tableau
+              </button>
+            </div>
+          </div>
+
+          <div class="tool-right">
+            <div class="count">
+              <span class="chip">{{ totalElements }}</span>
+              <span class="muted">résultat(s)</span>
+            </div>
+            <button type="button" class="topbtn" (click)="openModal()">
+              <app-hero-icon name="plus" size="sm" />
+              <span>Ajouter</span>
+            </button>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!loading && !error && partners.length === 0">Aucun partenaire.</p>
+
+        <section class="grid-cards" *ngIf="!loading && !error && view === 'grid'">
+          <article class="p-card glass" *ngFor="let p of partners">
+            <div class="p-head">
+              <div class="p-logo">
+                <img *ngIf="logoSrc(p) as src" [src]="src" [alt]="p.name" />
+                <span *ngIf="!p.logoUrl" class="logo-fallback">{{ p.name }}</span>
+              </div>
+              <div class="p-meta">
+                <div class="p-name">
+                  {{ p.name }}
+                  <span class="pill" [class.archived]="p.archived">{{ p.tier }}</span>
+                </div>
+                <div class="muted small">
+                  <span class="mono">ID: {{ p.id }}</span>
+                  <span *ngIf="p.archived" class="arch-tag">· Archivé</span>
+                </div>
+                <a *ngIf="p.website" class="link" [href]="p.website" target="_blank" rel="noopener">{{ p.website }}</a>
+              </div>
+            </div>
+
+            <div class="p-actions">
+              <button type="button" class="ghost" (click)="openEditModal(p)">
+                <app-hero-icon name="pencil-square" size="sm" />
+                <span>Modifier</span>
+              </button>
+
+              <button
+                type="button"
+                class="ghost danger"
+                *ngIf="!p.archived"
+                (click)="setArchived(p, true)"
+              >
+                Archiver
+              </button>
+
+              <button type="button" class="ghost" *ngIf="p.archived" (click)="setArchived(p, false)">
+                Réactiver
+              </button>
+            </div>
+          </article>
+        </section>
+
+        <section class="table glass" *ngIf="!loading && !error && view === 'table' && partners.length">
+          <div class="tr th">
+            <div>Nom</div>
+            <div>Tier</div>
+            <div>Website</div>
+            <div>Logo</div>
+            <div class="r">Actions</div>
+          </div>
+          <div class="tr" *ngFor="let p of partners">
+            <div class="strong">{{ p.name }}</div>
+            <div><span class="pill" [class.archived]="p.archived">{{ p.tier }}</span></div>
+            <div class="muted">{{ p.website || '—' }}</div>
+            <div class="logo-cell">
+              <img *ngIf="logoSrc(p) as src" [src]="src" [alt]="p.name" />
+              <span *ngIf="!p.logoUrl" class="muted">—</span>
+            </div>
+            <div class="r">
+              <button type="button" class="ghost" (click)="openEditModal(p)">
+                <app-hero-icon name="pencil-square" size="sm" />
+                <span>Modifier</span>
+              </button>
+              <button type="button" class="ghost danger" *ngIf="!p.archived" (click)="setArchived(p, true)">Archiver</button>
+              <button type="button" class="ghost" *ngIf="p.archived" (click)="setArchived(p, false)">Réactiver</button>
+            </div>
+          </div>
+        </section>
+
+        <nav class="pager glass" *ngIf="!loading && !error && totalElements > 0" aria-label="Pagination">
+          <button type="button" class="ghost" (click)="prevPage()" [disabled]="page <= 0">Précédent</button>
+          <span class="pager-info">
+            Page <strong>{{ page + 1 }}</strong> / <strong>{{ totalPages || 1 }}</strong>
+            <span class="muted">· {{ pageSize }} par page</span>
+          </span>
+          <button type="button" class="ghost" (click)="nextPage()" [disabled]="totalPages === 0 || page >= totalPages - 1">
+            Suivant
+          </button>
+        </nav>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Modal: Ajouter partenaire -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="modalOpen" role="dialog" aria-modal="true" [attr.aria-label]="modalEdit ? 'Modifier partenaire' : 'Ajouter partenaire'">
+  <div class="modal-card glass" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <span class="chip">ADMIN</span>
+        <strong>{{ modalEdit ? 'Modifier le partenaire' : 'Ajouter un partenaire' }}</strong>
+      </div>
+      <button type="button" class="ghost" (click)="closeModal()">Fermer</button>
+    </header>
+
+    <div class="modal-body">
+      <div class="modal-preview" *ngIf="modalPreviewSrc() as msrc">
+        <div class="preview-label muted">Aperçu du logo</div>
+        <div class="preview-box">
+          <img [src]="msrc" [alt]="name || 'Logo'" />
+        </div>
+      </div>
+      <p class="preview-hint muted" *ngIf="modalEdit && !modalPreviewSrc()">Aucun logo — uploadez un fichier ci-dessous.</p>
+
+      <div class="row">
+        <label>
+          <span class="muted">Nom</span>
+          <input [(ngModel)]="name" placeholder="Ex: Orange / Google / …" />
+        </label>
+
+        <label>
+          <span class="muted">Tier</span>
+          <select [(ngModel)]="tier">
+            <option value="GOLD">GOLD</option>
+            <option value="SILVER">SILVER</option>
+            <option value="BRONZE">BRONZE</option>
+          </select>
+        </label>
+
+        <label class="grow">
+          <span class="muted">Website</span>
+          <input [(ngModel)]="website" placeholder="https://…" />
+        </label>
+      </div>
+
+      <label class="arch-line" *ngIf="modalEdit">
+        <input type="checkbox" [(ngModel)]="archived" />
+        <span>Archivé (masqué sur le site public)</span>
+      </label>
+
+      <div class="row">
+        <label class="grow">
+          <span class="muted">{{ modalEdit ? 'Nouveau logo (optionnel)' : 'Logo (png/jpg/webp/svg)' }}</span>
+          <input type="file" accept=".png,.jpg,.jpeg,.webp,.svg" (change)="onFileSelected($any($event.target).files)" />
+        </label>
+      </div>
+    </div>
+
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeModal()">Annuler</button>
+      <button type="button" class="topbtn" (click)="saveModal()">
+        <app-hero-icon [name]="modalEdit ? 'pencil-square' : 'plus'" size="sm" />
+        <span>{{ modalEdit ? 'Enregistrer' : 'Créer' }}</span>
+      </button>
+    </footer>
+  </div>
+</div>
+

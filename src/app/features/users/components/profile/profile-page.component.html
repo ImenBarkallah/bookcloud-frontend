@@ -1,0 +1,149 @@
+<ng-container *ngIf="vm$ | async as vm">
+  <div class="profile-page" *ngIf="vm.user && vm.profile">
+    <div class="profile-three-bg">
+      <div #threeHost class="three-host"></div>
+      <div class="three-fade"></div>
+    </div>
+
+    <div class="profile-inner">
+      <aside class="profile-col-left">
+        <div class="glass-card profile-hero profile-card">
+          <div class="cover-strip">
+            <button type="button" class="cover-edit glass-pill cover-edit-btn" aria-label="Edit cover">
+              <svg viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 000-1.41l-2.34-2.34a1 1 0 00-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
+            </button>
+          </div>
+
+          <div class="profile-avatar-wrap avatar-wrapper" #avatarWrapper>
+            <label class="avatar-hit">
+              <input type="file" accept="image/*" class="sr-only" (change)="onAvatar($event)" />
+              <app-user-avatar
+                [photoURL]="vm.user.photoURL"
+                [displayName]="vm.profile.displayName || vm.user.email || ''"
+                size="lg"
+              />
+              <span class="avatar-overlay avatar-upload-overlay"><span class="cam">📷</span></span>
+            </label>
+            <div class="upload-ring" *ngIf="avatarBusy" aria-hidden="true">{{ uploadProgress }}%</div>
+          </div>
+
+          <h1 class="profile-name">{{ vm.profile.displayName }}</h1>
+          <p class="profile-email">{{ vm.user.email }}</p>
+          <p class="profile-meta muted">{{ 'PROFILE.MEMBER_SINCE' | translate }} {{ memberSince(vm.profile.createdAt) }}</p>
+          <span class="role-pill" [class.admin]="vm.profile.role === Role.ADMIN"
+                [class.lib]="vm.profile.role === Role.BIBLIOTHECAIRE">{{ roleLabel(vm.profile.role) }}</span>
+        </div>
+
+        <div class="glass-card stats-grid">
+          <div class="stat stat-loans stat-card"><span class="stat-num">0</span><span class="stat-lbl">{{ 'PROFILE.STAT_LOANS' | translate }}</span></div>
+          <div class="stat stat-returned stat-card"><span class="stat-num">0</span><span class="stat-lbl">{{ 'PROFILE.STAT_RETURNED' | translate }}</span></div>
+          <div class="stat stat-res stat-card"><span class="stat-num">0</span><span class="stat-lbl">{{ 'PROFILE.STAT_RES' | translate }}</span></div>
+          <div class="stat stat-fines stat-card"><span class="stat-num">0</span><span class="stat-lbl">{{ 'PROFILE.STAT_FINES' | translate }}</span></div>
+        </div>
+
+        <div class="glass-card member-card">
+          <p class="mc-title">{{ 'PROFILE.MEMBER_CARD' | translate }}</p>
+          <div class="qr-wrap qr-code-wrapper">
+            <img *ngIf="qrImgSrc" [src]="qrImgSrc" width="120" height="120" alt="" />
+          </div>
+          <p class="mc-id" #memberIdEl>#{{ memberCardDisplay }}</p>
+          <button type="button" class="btn-dl btn-download-card" (click)="downloadCard($event)">{{ 'PROFILE.DOWNLOAD_CARD' | translate }}</button>
+        </div>
+      </aside>
+
+      <section class="profile-col-right">
+        <div class="glass-card tabs-wrap profile-form-panel">
+          <div class="tabs-row" #tabsRow role="tablist">
+            <button type="button" role="tab" class="profile-tab tab-item" [class.active]="tabIndex===0" (click)="selectTab(0)">{{ 'PROFILE.TAB_INFO' | translate }}</button>
+            <button type="button" role="tab" class="profile-tab tab-item" [class.active]="tabIndex===1" (click)="selectTab(1)">{{ 'PROFILE.TAB_SECURITY' | translate }}</button>
+            <button type="button" role="tab" class="profile-tab tab-item" [class.active]="tabIndex===2" (click)="selectTab(2)">{{ 'PROFILE.TAB_PREFERENCES' | translate }}</button>
+            <button type="button" role="tab" class="profile-tab tab-item" [class.active]="tabIndex===3" (click)="selectTab(3)">{{ 'PROFILE.TAB_ACTIVITY' | translate }}</button>
+            <div #tabsUnderline class="tab-underline"></div>
+          </div>
+
+          <div class="profile-tab-panel tab-content-active" [class.is-active]="tabIndex===0" *ngIf="tabIndex===0">
+            <form class="profile-form-card" [formGroup]="personalForm" (ngSubmit)="savePersonal()">
+              <label class="pf-field form-group"><span>{{ 'PROFILE.FIRST_NAME' | translate }}</span><input formControlName="firstName" /></label>
+              <label class="pf-field form-group"><span>{{ 'PROFILE.LAST_NAME' | translate }}</span><input formControlName="lastName" /></label>
+              <label class="pf-field form-group"><span>{{ 'PROFILE.EMAIL_RO' | translate }}</span><input [value]="vm.user.email" readonly /></label>
+              <label class="pf-field form-group"><span>{{ 'REGISTER.PHONE' | translate }}</span><input formControlName="phone" type="tel" /></label>
+              <label class="pf-field form-group"><span>{{ 'PROFILE.DOB' | translate }}</span><input formControlName="dateOfBirth" type="date" /></label>
+              <label class="pf-field bio-field form-group"><span>{{ 'PROFILE.BIO' | translate }}</span>
+                <textarea formControlName="bio" rows="3" maxlength="200"></textarea>
+                <span class="bio-count">{{ bioCount() }}/200</span>
+              </label>
+
+              <button type="button" class="addr-toggle" (click)="toggleAddress()">{{ 'PROFILE.ADDRESS_SECTION' | translate }}</button>
+              <div class="addr-block" [class.open]="addressOpen">
+                <label class="pf-field form-group"><span>{{ 'PROFILE.STREET' | translate }}</span><input formControlName="street" /></label>
+                <label class="pf-field form-group"><span>{{ 'PROFILE.CITY' | translate }}</span><input formControlName="city" /></label>
+                <label class="pf-field form-group"><span>{{ 'PROFILE.COUNTRY' | translate }}</span>
+                  <select formControlName="country"><option value="">—</option><option *ngFor="let c of countries" [value]="c">{{ c }}</option></select>
+                </label>
+              </div>
+
+              <button type="submit" #personalSaveBtn class="btn-save profile-save-btn" [disabled]="saveBusy"><span class="btn-save-label">{{ 'PROFILE.SAVE' | translate }}</span><span class="btn-save-spinner" aria-hidden="true"></span><span class="btn-save-check" aria-hidden="true">✓</span></button>
+            </form>
+          </div>
+
+          <div class="profile-tab-panel tab-content-active" [class.is-active]="tabIndex===1" *ngIf="tabIndex===1">
+            <form [formGroup]="securityForm" (ngSubmit)="updatePassword()" class="profile-form-card">
+              <h3>{{ 'PROFILE.CHANGE_PASSWORD' | translate }}</h3>
+              <label class="pf-field form-group"><span>{{ 'PROFILE.CURRENT_PWD' | translate }}</span><input formControlName="currentPassword" type="password" autocomplete="current-password" /></label>
+              <label class="pf-field form-group"><span>{{ 'PROFILE.NEW_PWD' | translate }}</span><input formControlName="newPassword" type="password" autocomplete="new-password" /></label>
+              <label class="pf-field form-group"><span>{{ 'REGISTER.CONFIRM_LABEL' | translate }}</span><input formControlName="confirmPassword" type="password" autocomplete="new-password" /></label>
+              <button type="submit" class="btn-save profile-save-btn" [disabled]="pwdBusy"><span class="btn-save-label">{{ 'PROFILE.UPDATE_PASSWORD' | translate }}</span><span class="btn-save-spinner" aria-hidden="true"></span></button>
+            </form>
+
+            <div class="glass-card danger-zone">
+              <h3>{{ 'PROFILE.DANGER_ZONE' | translate }}</h3>
+              <button type="button" class="btn-delete" (click)="deleteOpen = true">{{ 'PROFILE.DELETE_ACCOUNT' | translate }}</button>
+            </div>
+          </div>
+
+          <div class="profile-tab-panel prefs-card tab-content-active" [class.is-active]="tabIndex===2" *ngIf="tabIndex===2">
+            <form [formGroup]="prefsForm" (ngSubmit)="savePreferences(); $event.preventDefault()" class="profile-form-card">
+              <label class="pf-row form-group"><span>{{ 'PROFILE.PREF_LANG' | translate }}</span>
+                <select formControlName="language"><option value="en">EN</option><option value="fr">FR</option></select>
+              </label>
+              <label class="pf-row form-group"><span>{{ 'PROFILE.PREF_THEME' | translate }}</span>
+                <select formControlName="theme"><option value="dark">{{ 'PROFILE.THEME_DARK' | translate }}</option><option value="light">{{ 'PROFILE.THEME_LIGHT' | translate }}</option></select>
+              </label>
+              <label class="switch-row form-group"><input type="checkbox" formControlName="emailWhenAvailable" /> {{ 'PROFILE.NOTIF_AVAILABLE' | translate }}</label>
+              <label class="switch-row form-group"><input type="checkbox" formControlName="emailDueReminder" /> {{ 'PROFILE.NOTIF_DUE' | translate }}</label>
+              <label class="switch-row form-group"><input type="checkbox" formControlName="pushNotifications" /> {{ 'PROFILE.NOTIF_PUSH' | translate }}</label>
+              <label class="pf-row form-group"><span>{{ 'PROFILE.CATALOG_VIEW' | translate }}</span>
+                <select formControlName="catalogueView"><option value="grid">Grid</option><option value="list">List</option></select>
+              </label>
+              <button type="button" class="btn-save profile-save-btn" (click)="savePreferences()"><span class="btn-save-label">{{ 'PROFILE.SAVE' | translate }}</span><span class="btn-save-spinner" aria-hidden="true"></span></button>
+            </form>
+          </div>
+
+          <div class="profile-tab-panel tab-content-active" [class.is-active]="tabIndex===3" *ngIf="tabIndex===3">
+            <div class="activity-list">
+              <div class="activity-row" *ngFor="let row of activity">
+                <span class="dot" [attr.data-tone]="row.tone"></span>
+                <div>
+                  <p>{{ row.text }}</p>
+                  <time>{{ row.at | date:'short' }}</time>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <div class="modal-delete" *ngIf="deleteOpen" role="dialog">
+      <div class="modal-backdrop" (click)="deleteOpen = false"></div>
+      <div class="modal-sheet glass-card">
+        <p>{{ 'PROFILE.DELETE_CONFIRM' | translate }}</p>
+        <input [(ngModel)]="deletePhrase" placeholder="DELETE" class="del-input" />
+        <div class="modal-actions">
+          <button type="button" (click)="deleteOpen = false">{{ 'LOGIN.FORGOT_CLOSE' | translate }}</button>
+          <button type="button" class="btn-del" (click)="confirmDelete()">{{ 'PROFILE.DELETE_ACCOUNT' | translate }}</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</ng-container>

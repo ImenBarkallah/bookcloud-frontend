@@ -1,0 +1,79 @@
+<section class="admin-layout admin-settings">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Paramètres bibliothèque">
+      <button type="button" class="topbtn" (click)="load()" [disabled]="loading">
+        <app-hero-icon name="arrow-path" size="sm" />
+        <span>Rafraîchir</span>
+      </button>
+      <button type="button" class="topbtn" (click)="save()" [disabled]="pendingSave || loading || error">
+        <app-hero-icon name="check" size="sm" />
+        <span>Enregistrer</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Paramètres bibliothèque" subtitle="Règles de prêt · amendes · réservations" />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les paramètres.</div>
+
+        <div class="grid" *ngIf="!loading && !error">
+          <section class="panel glass">
+            <header class="panel-head">
+              <h2>Règles de prêt</h2>
+              <span class="hint">Politique par défaut</span>
+            </header>
+
+            <div class="form">
+              <label>
+                <span>Durée par défaut (jours)</span>
+                <input type="number" [(ngModel)]="formDefaultLoanDays" min="1" />
+              </label>
+              <label>
+                <span>Max emprunts actifs (défaut)</span>
+                <input type="number" [(ngModel)]="formMaxActiveLoans" min="0" />
+                <em class="hint">0 = illimité</em>
+              </label>
+            </div>
+          </section>
+
+          <section class="panel glass">
+            <header class="panel-head">
+              <h2>Réservations</h2>
+              <span class="hint">Expiration & file</span>
+            </header>
+
+            <div class="form">
+              <label>
+                <span>Expiration réservation (jours)</span>
+                <input type="number" [(ngModel)]="formReservationExpiryDays" min="0" />
+              </label>
+            </div>
+          </section>
+
+          <section class="panel glass span2">
+            <header class="panel-head">
+              <h2>Amendes</h2>
+              <span class="hint">Pénalité par jour</span>
+            </header>
+
+            <div class="form">
+              <label>
+                <span>Montant / jour</span>
+                <input type="number" [(ngModel)]="formFinePerDay" min="0" step="0.1" />
+              </label>
+            </div>
+
+            <div class="meta" *ngIf="settings?.updatedAt">
+              Dernière mise à jour: <span class="mono">{{ settings?.updatedAt }}</span>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+

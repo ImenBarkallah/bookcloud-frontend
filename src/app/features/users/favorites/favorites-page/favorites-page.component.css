@@ -1,0 +1,182 @@
+ .fav-root {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2.25rem 1.25rem 3.5rem;
+}
+
+.fav-head {
+  margin-bottom: 1.5rem;
+}
+
+.fav-title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: clamp(1.7rem, 3.2vw, 2.4rem);
+  letter-spacing: 0.01em;
+}
+
+.fav-sub {
+  margin: 0.45rem 0 0;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.fav-error {
+  border: 1px solid rgba(255, 100, 100, 0.25);
+  border-radius: 14px;
+  padding: 1rem 1.1rem;
+  background: rgba(255, 50, 50, 0.06);
+  color: rgba(255, 220, 220, 0.95);
+}
+
+.fav-empty {
+  border: 1px solid var(--color-border);
+  border-radius: 16px;
+  background: var(--color-glass);
+  backdrop-filter: blur(18px);
+  padding: 1.25rem 1.25rem;
+}
+
+.fav-link {
+  display: inline-flex;
+  margin-top: 0.5rem;
+  color: var(--color-cyan);
+  text-decoration: none;
+}
+
+.fav-link:hover {
+  text-decoration: underline;
+}
+
+.fav-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1.1rem;
+}
+
+@media (max-width: 1024px) {
+  .fav-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .fav-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.fav-skel {
+  height: 220px;
+  border-radius: 16px;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.04));
+  background-size: 200% 100%;
+  animation: favShimmer 1.2s ease-in-out infinite;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+@keyframes favShimmer {
+  0% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: -200% 0%;
+  }
+}
+
+.fav-card {
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--color-glass);
+  backdrop-filter: blur(18px);
+  border: 1px solid var(--color-border);
+  transition: transform 0.22s ease, border-color 0.22s ease;
+}
+
+.fav-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(123, 94, 167, 0.35);
+}
+
+.fav-cover {
+  display: block;
+  height: 140px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.fav-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.fav-cover--fallback {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(145deg, rgba(123, 94, 167, 0.25), rgba(0, 212, 255, 0.12));
+}
+
+.fav-meta {
+  padding: 0.9rem 0.95rem 1rem;
+}
+
+.fav-name {
+  display: block;
+  color: rgba(255, 255, 255, 0.92);
+  font-weight: 750;
+  text-decoration: none;
+}
+
+.fav-name:hover {
+  color: #fff;
+}
+
+.fav-subline {
+  margin-top: 0.35rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.92rem;
+}
+
+.dot {
+  opacity: 0.7;
+}
+
+.pill {
+  display: inline-flex;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.fav-actions {
+  margin-top: 0.8rem;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fav-heart {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(123, 94, 167, 0.55);
+  background: rgba(123, 94, 167, 0.28);
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease;
+}
+
+.fav-heart:hover {
+  transform: translateY(-1px);
+  background: rgba(123, 94, 167, 0.36);
+}
+
+.fav-heart:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+

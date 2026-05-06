@@ -1,0 +1,72 @@
+<div class="catalogue-layout">
+  <app-catalogue-hero />
+
+  <app-catalogue-toolbar
+    [showing]="(books$ | async)?.length ?? 0"
+    [total]="(totalCount$ | async) ?? 0"
+    [searchValue]="(filters$ | async)?.search ?? ''"
+    [sort]="(filters$ | async)?.sort ?? 'newest'"
+    [viewMode]="(viewMode$ | async) ?? 'grid'"
+    (searchChange)="onSearch($event)"
+    (sortChange)="onSort($event)"
+    (viewModeChange)="onView($event)"
+    (openFilters)="mobileFiltersOpen = true"
+  />
+
+  <div class="catalogue-body">
+    <div class="backdrop-filters" *ngIf="mobileFiltersOpen" (click)="mobileFiltersOpen = false"></div>
+
+    <app-catalogue-filters-sidebar
+      [categories]="categories"
+      [applied]="(filters$ | async)!"
+      [mobileOpen]="mobileFiltersOpen"
+      (apply)="applyFilters($event)"
+      (reset)="resetFilters()"
+      (closeMobile)="mobileFiltersOpen = false"
+    />
+
+    <div class="catalogue-main">
+      <div class="skeleton-grid" *ngIf="loading$ | async">
+        <div class="sk-card shimmer" *ngFor="let _ of skeletonItems()"></div>
+      </div>
+
+      <div
+        class="books-grid"
+        #gridHost
+        [class.list]="(viewMode$ | async) === 'list'"
+        *ngIf="(loading$ | async) === false"
+      >
+        <ng-container *ngIf="(books$ | async)?.length === 0">
+          <div class="empty">
+            <div class="empty-book">📖</div>
+            <h3>{{ 'CATALOGUE.EMPTY_TITLE' | translate }}</h3>
+            <p>{{ 'CATALOGUE.EMPTY_HINT' | translate }}</p>
+          </div>
+        </ng-container>
+
+        <app-catalogue-book-card
+          *ngFor="let book of books$ | async; trackBy: trackBook"
+          #card
+          [book]="book"
+          [layout]="(viewMode$ | async) === 'list' ? 'list' : 'grid'"
+          [borrowing]="borrowingIds.has(book.id)"
+          (borrow)="borrow(book, card)"
+          (favoriteToggle)="favorite(book, card)"
+          (quickView)="quickView(book.id)"
+        />
+
+        <div class="sentinel" #scrollSentinel *ngIf="hasMore() && (books$ | async)?.length"></div>
+
+        <div class="more-skel" *ngIf="loadingMore$ | async">
+          <div class="sk-card shimmer sm" *ngFor="let _ of skeletonMore()"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <app-catalogue-quick-view
+    [bookId]="(selectedBookId$ | async) ?? null"
+    (closed)="closeDrawer()"
+    (borrowed)="onDrawerBorrow($event)"
+  />
+</div>

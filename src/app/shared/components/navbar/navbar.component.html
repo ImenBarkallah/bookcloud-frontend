@@ -1,0 +1,120 @@
+<nav class="navbar-shell">
+  <a routerLink="/" class="nav-brand" routerLinkActive="active-link" [routerLinkActiveOptions]="{ exact: true }">
+    <svg class="brand-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M4 4h16v2H4V4zm0 4h10v12H4V8zm12 0h4v12h-4V8zM6 10v8h6v-8H6zm12 0v8h1v-8h-1z"/>
+    </svg>
+    <span class="brand-text">BookCloud</span>
+  </a>
+
+  <div class="nav-center">
+    <a routerLink="/catalogue" class="nav-link" routerLinkActive="active-link">{{ 'NAV.CATALOGUE' | translate }}</a>
+    <a routerLink="/offers" class="nav-link" routerLinkActive="active-link">Offres</a>
+    <a routerLink="/categories" class="nav-link" routerLinkActive="active-link">{{ 'NAV.CATEGORIES' | translate }}</a>
+    <a routerLink="/authors" class="nav-link" routerLinkActive="active-link">{{ 'NAV.AUTHORS' | translate }}</a>
+    <a routerLink="/about" class="nav-link" routerLinkActive="active-link">{{ 'NAV.ABOUT' | translate }}</a>
+  </div>
+
+  <div class="nav-actions">
+    <div class="lang-switch" role="group" [attr.aria-label]="'LANG.EN' | translate">
+      <button type="button" class="lang-btn" [class.active]="isLang('en')" (click)="setLang('en')">EN</button>
+      <button type="button" class="lang-btn" [class.active]="isLang('fr')" (click)="setLang('fr')">FR</button>
+    </div>
+
+    <ng-container *ngIf="vm$ | async as vm">
+      <div class="nav-guest-cluster" #guestCluster *ngIf="!vm[0]">
+        <a routerLink="/auth/login" class="btn-login">{{ 'NAV.LOGIN' | translate }}</a>
+        <a routerLink="/auth/register" class="btn-signup">{{ 'NAV.SIGN_UP' | translate }}</a>
+      </div>
+
+      <div class="nav-auth-cluster" #authCluster *ngIf="vm[0] as user">
+        <a
+          routerLink="/favorites"
+          class="btn-icon fav-btn"
+          [attr.aria-label]="'NAVBAR.FAVORITES' | translate"
+          title="{{ 'NAVBAR.FAVORITES' | translate }}"
+        >
+          <app-hero-icon name="heart" size="md" />
+          <span class="fav-badge" *ngIf="favoritesCount > 0">{{ favoritesCount }}</span>
+        </a>
+
+        <div class="notif-host">
+          <button
+            type="button"
+            class="btn-bell"
+            (click)="toggleNotif($event)"
+            (mouseenter)="bellEnter($event.currentTarget)"
+            [attr.aria-label]="'NAVBAR.NOTIFICATIONS' | translate"
+          >
+            <svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true">
+              <path fill="currentColor" d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6V11c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+            </svg>
+            <span class="bell-dot" *ngIf="(unread$ | async)! > 0"></span>
+          </button>
+          <div class="notif-dropdown" *ngIf="notifOpen" role="menu">
+            <p class="notif-head">{{ 'NAVBAR.NOTIFICATIONS' | translate }}</p>
+            <div class="notif-item" *ngFor="let n of (notifications$ | async) || []">
+              <span>{{ n.message }}</span>
+              <time>{{ n.createdAt | date:'short' }}</time>
+            </div>
+            <p class="notif-empty" *ngIf="!(notifications$ | async)?.length">{{ 'NAVBAR.NO_NOTIFS' | translate }}</p>
+          </div>
+        </div>
+
+        <div class="user-menu-host">
+          <button type="button" class="user-menu" (click)="toggleMenu(); $event.stopPropagation()">
+            <div class="avatar-wrapper">
+              <app-user-avatar
+                [photoURL]="user.photoURL"
+                [displayName]="displayName(user, vm[1])"
+                size="sm"
+              />
+              <span class="online-dot"></span>
+            </div>
+            <span class="user-name">{{ displayName(user, vm[1]) | titlecase }}</span>
+            <svg #chevron class="chev" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path fill="currentColor" d="M7 10l5 5 5-5z"/>
+            </svg>
+          </button>
+
+          <div class="user-dropdown" #dropdownPanel *ngIf="menuOpen" role="menu" (click)="$event.stopPropagation()">
+            <div class="dd-header">
+              <app-user-avatar [photoURL]="user.photoURL" [displayName]="displayName(user, vm[1])" size="md" />
+              <div>
+                <div class="dd-name">{{ displayName(user, vm[1]) }}</div>
+                <div class="dd-email">{{ user.email }}</div>
+                <span class="dd-badge" *ngIf="vm[1]">{{ vm[1].role }}</span>
+              </div>
+            </div>
+            <div class="dd-divider"></div>
+            <a routerLink="/user/profile" class="dd-item" (click)="closeMenu()">
+              <span class="dd-ico"><app-hero-icon name="user" size="md" /></span> {{ 'NAVBAR.PROFILE' | translate }}
+            </a>
+            <a routerLink="/loans" class="dd-item" (click)="closeMenu()">
+              <span class="dd-ico"><app-hero-icon name="bookmark" size="md" /></span> {{ 'NAVBAR.LOANS' | translate }}
+              <span class="dd-pill" *ngIf="vm[1]?.activeLoans">{{ vm[1]?.activeLoans }}</span>
+            </a>
+            <a routerLink="/catalogue" class="dd-item" (click)="closeMenu()"
+              ><span class="dd-ico"><app-hero-icon name="view-columns" size="md" /></span> {{ 'NAVBAR.RESERVATIONS' | translate }}</a
+            >
+            <a
+              *ngIf="isAdmin(vm[1]?.role)"
+              routerLink="/admin"
+              class="dd-item"
+              (click)="closeMenu()"
+            >
+              <span class="dd-ico"><app-hero-icon name="squares-2x2" size="md" /></span> Dashboard admin
+            </a>
+            <div class="dd-divider"></div>
+            <a routerLink="/user/profile" class="dd-item" (click)="closeMenu()"
+              ><span class="dd-ico"><app-hero-icon name="tag" size="md" /></span> {{ 'NAVBAR.SETTINGS' | translate }}</a
+            >
+            <div class="dd-divider"></div>
+            <button type="button" class="dd-item dd-logout" (click)="logout(displayName(user, vm[1]))">
+              <span class="dd-ico"><app-hero-icon name="arrow-path" size="md" /></span> {{ 'NAVBAR.LOGOUT' | translate }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </ng-container>
+  </div>
+</nav>

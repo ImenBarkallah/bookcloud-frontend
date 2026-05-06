@@ -1,0 +1,475 @@
+<section class="admin-layout admin-loans">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" [page]="'ADMIN.LOANS.PAGE_TITLE' | translate" />
+
+    <div class="admin-scroll">
+      <app-admin-page-head
+        badge="ADMIN"
+        [title]="'ADMIN.LOANS.PAGE_TITLE' | translate"
+        [subtitle]="'ADMIN.LOANS.PAGE_SUB' | translate"
+      />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">{{ 'ADMIN.LOANS.LOADING' | translate }}</div>
+        <div class="state err" *ngIf="error">{{ 'ADMIN.LOANS.LOAD_ERR' | translate }}</div>
+
+        <div class="kpi-row" *ngIf="!loading && !error">
+          <div class="kpi glass kpi--amber">
+            <span class="kpi-ico" aria-hidden="true">📚</span>
+            <div>
+              <div class="kpi-val">{{ kpiActive() }}</div>
+              <div class="kpi-label">{{ 'ADMIN.LOANS.KPI_ACTIVE' | translate }}</div>
+            </div>
+          </div>
+          <div class="kpi glass kpi--red">
+            <span class="kpi-ico" aria-hidden="true">🔴</span>
+            <div>
+              <div class="kpi-val">{{ kpiOverdue() }}</div>
+              <div class="kpi-label">{{ 'ADMIN.LOANS.KPI_OVERDUE' | translate }}</div>
+            </div>
+          </div>
+          <div class="kpi glass kpi--green">
+            <span class="kpi-ico" aria-hidden="true">🟢</span>
+            <div>
+              <div class="kpi-val">{{ kpiReturned() }}</div>
+              <div class="kpi-label">{{ 'ADMIN.LOANS.KPI_RETURNED' | translate }}</div>
+            </div>
+          </div>
+          <div class="kpi glass kpi--neutral">
+            <span class="kpi-ico" aria-hidden="true">👥</span>
+            <div>
+              <div class="kpi-val">{{ kpiTotal() }}</div>
+              <div class="kpi-label">{{ 'ADMIN.LOANS.KPI_TOTAL' | translate }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input
+                [ngModel]="q"
+                (ngModelChange)="onQueryChange($event)"
+                type="text"
+                [placeholder]="'ADMIN.LOANS.SEARCH_PH' | translate"
+              />
+            </div>
+            <div class="count">
+              <span class="chip">{{ filteredLoans.length }}</span>
+              <span class="muted">{{ 'ADMIN.LOANS.SHOWN' | translate }}</span>
+              <span class="muted">· {{ allLoans.length }} {{ 'ADMIN.LOANS.TOTAL_SHORT' | translate }}</span>
+            </div>
+          </div>
+
+          <div class="tool-right">
+            <div class="filters" role="group" [attr.aria-label]="'ADMIN.LOANS.FILTER_ARIA' | translate">
+              <button type="button" class="pill-btn" [class.on]="statusFilter === 'ALL'" (click)="setStatusFilter('ALL')">
+                {{ 'ADMIN.LOANS.F_ALL' | translate }}
+              </button>
+              <button type="button" class="pill-btn" [class.on]="statusFilter === 'ACTIVE'" (click)="setStatusFilter('ACTIVE')">
+                {{ 'ADMIN.LOANS.F_ACTIVE' | translate }}
+              </button>
+              <button
+                type="button"
+                class="pill-btn pill-btn--warn"
+                [class.on]="statusFilter === 'OVERDUE'"
+                (click)="setStatusFilter('OVERDUE')"
+              >
+                {{ 'ADMIN.LOANS.F_OVERDUE' | translate }}
+              </button>
+              <button type="button" class="pill-btn" [class.on]="statusFilter === 'RETURNED'" (click)="setStatusFilter('RETURNED')">
+                {{ 'ADMIN.LOANS.F_RETURNED' | translate }}
+              </button>
+            </div>
+            <div class="seg" role="group" [attr.aria-label]="'ADMIN.LOANS.VIEW_ARIA' | translate">
+              <button
+                type="button"
+                class="seg-btn seg-btn--ico"
+                [class.on]="view === 'table'"
+                (click)="setView('table')"
+                [title]="'ADMIN.LOANS.VIEW_TABLE' | translate"
+                [attr.aria-label]="'ADMIN.LOANS.VIEW_TABLE' | translate"
+              >
+                <app-hero-icon name="table-cells" size="sm" />
+              </button>
+              <button
+                type="button"
+                class="seg-btn seg-btn--ico"
+                [class.on]="view === 'kanban'"
+                (click)="setView('kanban')"
+                [title]="'ADMIN.LOANS.VIEW_KANBAN' | translate"
+                [attr.aria-label]="'ADMIN.LOANS.VIEW_KANBAN' | translate"
+              >
+                <app-hero-icon name="view-columns" size="sm" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="!loading && !error">
+          <p class="empty" *ngIf="filteredLoans.length === 0">{{ 'ADMIN.LOANS.EMPTY' | translate }}</p>
+
+          <!-- Kanban -->
+          <div class="kanban" *ngIf="view === 'kanban' && filteredLoans.length">
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--amber">
+                <span>🟡</span> {{ 'ADMIN.LOANS.COL_ACTIVE' | translate }}
+                <span class="kan-count">{{ loansColumn('ACTIVE').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let l of loansColumn('ACTIVE'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="l.coverUrl" [src]="l.coverUrl" [alt]="bookTitle(l)" loading="lazy" />
+                    <div *ngIf="!l.coverUrl" class="kan-ph">📘</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <a class="kan-title" [routerLink]="['/books', l.bookId]">{{ bookTitle(l) }}</a>
+                    <div class="kan-user">{{ userLabel(l) }}</div>
+                    <div class="kan-meta muted">{{ 'ADMIN.LOANS.DUE' | translate }} {{ l.dueAt | date : 'short' }}</div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      *ngIf="canReturn(l)"
+                      [disabled]="isPending(l.id)"
+                      (click)="returnBook(l)"
+                      [title]="'ADMIN.LOANS.ACTION_RETURN' | translate"
+                    >
+                      <app-hero-icon name="check" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost danger ghost--ico"
+                      [disabled]="isPending(l.id)"
+                      (click)="openCancelModal(l)"
+                      [title]="'ADMIN.LOANS.ACTION_CANCEL' | translate"
+                    >
+                      <app-hero-icon name="x-mark" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(l.id)"
+                      (click)="openDetail(l)"
+                      [title]="'ADMIN.LOANS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="loansColumn('ACTIVE').length === 0">{{ 'ADMIN.LOANS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--red">
+                <span>🔴</span> {{ 'ADMIN.LOANS.COL_OVERDUE' | translate }}
+                <span class="kan-count">{{ loansColumn('OVERDUE').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let l of loansColumn('OVERDUE'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="l.coverUrl" [src]="l.coverUrl" [alt]="bookTitle(l)" loading="lazy" />
+                    <div *ngIf="!l.coverUrl" class="kan-ph">📘</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <a class="kan-title" [routerLink]="['/books', l.bookId]">{{ bookTitle(l) }}</a>
+                    <div class="kan-user">{{ userLabel(l) }}</div>
+                    <div class="kan-meta kan-meta--late">{{ 'ADMIN.LOANS.DUE' | translate }} {{ l.dueAt | date : 'short' }}</div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      *ngIf="canReturn(l)"
+                      [disabled]="isPending(l.id)"
+                      (click)="returnBook(l)"
+                      [title]="'ADMIN.LOANS.ACTION_RETURN' | translate"
+                    >
+                      <app-hero-icon name="check" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost danger ghost--ico"
+                      [disabled]="isPending(l.id)"
+                      (click)="openCancelModal(l)"
+                      [title]="'ADMIN.LOANS.ACTION_CANCEL' | translate"
+                    >
+                      <app-hero-icon name="x-mark" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(l.id)"
+                      (click)="openDetail(l)"
+                      [title]="'ADMIN.LOANS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="loansColumn('OVERDUE').length === 0">{{ 'ADMIN.LOANS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+
+            <div class="kan-col glass">
+              <div class="kan-head kan-head--green">
+                <span>🟢</span> {{ 'ADMIN.LOANS.COL_RETURNED' | translate }}
+                <span class="kan-count">{{ loansColumn('RETURNED').length }}</span>
+              </div>
+              <div class="kan-cards">
+                <article class="kan-card" *ngFor="let l of loansColumn('RETURNED'); trackBy: trackById">
+                  <div class="kan-card-cover">
+                    <img *ngIf="l.coverUrl" [src]="l.coverUrl" [alt]="bookTitle(l)" loading="lazy" />
+                    <div *ngIf="!l.coverUrl" class="kan-ph">📘</div>
+                  </div>
+                  <div class="kan-card-body">
+                    <a class="kan-title" [routerLink]="['/books', l.bookId]">{{ bookTitle(l) }}</a>
+                    <div class="kan-user">{{ userLabel(l) }}</div>
+                    <div class="kan-meta muted">
+                      {{ 'ADMIN.LOANS.RETURNED_AT' | translate }} {{ l.returnedAt ? (l.returnedAt | date : 'short') : '—' }}
+                    </div>
+                  </div>
+                  <div class="kan-card-actions">
+                    <button
+                      type="button"
+                      class="ghost danger ghost--ico"
+                      [disabled]="isPending(l.id)"
+                      (click)="openCancelModal(l)"
+                      [title]="'ADMIN.LOANS.ACTION_CANCEL' | translate"
+                    >
+                      <app-hero-icon name="x-mark" size="sm" />
+                    </button>
+                    <button
+                      type="button"
+                      class="ghost ghost--ico"
+                      [disabled]="isPending(l.id)"
+                      (click)="openDetail(l)"
+                      [title]="'ADMIN.LOANS.ACTION_VIEW' | translate"
+                    >
+                      <app-hero-icon name="eye" size="sm" />
+                    </button>
+                  </div>
+                </article>
+                <p class="kan-empty" *ngIf="loansColumn('RETURNED').length === 0">{{ 'ADMIN.LOANS.COL_EMPTY' | translate }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <section class="table glass" *ngIf="view === 'table' && filteredLoans.length">
+            <div class="tr th">
+              <div>{{ 'ADMIN.LOANS.TH_STATUS' | translate }}</div>
+              <div>{{ 'ADMIN.LOANS.TH_BOOK' | translate }}</div>
+              <div>{{ 'ADMIN.LOANS.TH_USER' | translate }}</div>
+              <div>{{ 'ADMIN.LOANS.TH_START' | translate }}</div>
+              <div>{{ 'ADMIN.LOANS.TH_DUE' | translate }}</div>
+              <div>{{ 'ADMIN.LOANS.TH_RETURNED' | translate }}</div>
+              <div class="r">{{ 'ADMIN.LOANS.TH_ACTIONS' | translate }}</div>
+            </div>
+            <div class="tr loan-row" *ngFor="let l of filteredLoans; trackBy: trackById">
+              <div>
+                <span class="pill" [ngClass]="'st-' + normStatus(l).toLowerCase()">{{ statusLabelKey(l) | translate }}</span>
+              </div>
+              <div class="book-cell">
+                <div class="thumb" *ngIf="l.coverUrl">
+                  <img [src]="l.coverUrl" [alt]="bookTitle(l)" loading="lazy" />
+                </div>
+                <div class="thumb thumb--ph" *ngIf="!l.coverUrl">📘</div>
+                <div class="book-txt">
+                  <a class="link book-title" [routerLink]="['/books', l.bookId]">{{ bookTitle(l) }}</a>
+                  <div class="muted small" *ngIf="l.bookAuthor">{{ l.bookAuthor }}</div>
+                </div>
+              </div>
+              <div class="user-cell">
+                <div class="user-name">{{ userLabel(l) }}</div>
+                <div class="muted small uid-line" *ngIf="l.userEmail">{{ l.userEmail }}</div>
+                <div class="mono small uid-line" [title]="l.userUid">{{ uidShort(l.userUid) }}</div>
+              </div>
+              <div class="muted">{{ l.borrowedAt | date : 'short' }}</div>
+              <div>{{ l.dueAt | date : 'short' }}</div>
+              <div class="muted">{{ l.returnedAt ? (l.returnedAt | date : 'short') : '—' }}</div>
+              <div class="r loan-actions">
+                <button
+                  type="button"
+                  class="ghost ghost--ico"
+                  *ngIf="canRenew(l)"
+                  [disabled]="isPending(l.id)"
+                  (click)="renew(l)"
+                  [title]="'ADMIN.LOANS.ACTION_RENEW' | translate"
+                >
+                  <app-hero-icon name="plus" size="sm" />
+                </button>
+                <button
+                  type="button"
+                  class="ghost ghost--ico cta-return"
+                  *ngIf="canReturn(l)"
+                  [disabled]="isPending(l.id)"
+                  (click)="returnBook(l)"
+                  [title]="'ADMIN.LOANS.ACTION_RETURN' | translate"
+                >
+                  <app-hero-icon name="check" size="sm" />
+                </button>
+                <button
+                  type="button"
+                  class="ghost danger ghost--ico"
+                  [disabled]="isPending(l.id)"
+                  (click)="openCancelModal(l)"
+                  [title]="'ADMIN.LOANS.ACTION_CANCEL' | translate"
+                >
+                  <app-hero-icon name="x-mark" size="sm" />
+                </button>
+                <button
+                  type="button"
+                  class="ghost ghost--ico"
+                  [disabled]="isPending(l.id)"
+                  (click)="openDetail(l)"
+                  [title]="'ADMIN.LOANS.ACTION_VIEW' | translate"
+                >
+                  <app-hero-icon name="eye" size="sm" />
+                </button>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Annuler / supprimer -->
+<div class="modal-backdrop" *ngIf="deleteModalOpen" (click)="closeDeleteModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="deleteModalOpen" role="dialog" aria-modal="true" [attr.aria-label]="'ADMIN.LOANS.MODAL_CANCEL' | translate">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <span class="chip">ADMIN</span>
+        <strong>{{ 'ADMIN.LOANS.MODAL_CANCEL' | translate }}</strong>
+      </div>
+      <button
+        type="button"
+        class="ghost ghost--ico"
+        (click)="closeDeleteModal()"
+        [disabled]="pendingDelete"
+        [title]="'ADMIN.LOANS.CLOSE' | translate"
+      >
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body">
+      <p class="delete-msg" *ngIf="deleteTarget as d">
+        <ng-container *ngIf="normStatus(d) === 'RETURNED'; else activeCancel">
+          {{ 'ADMIN.LOANS.DELETE_MSG_RETURNED' | translate : { id: d.id } }}
+        </ng-container>
+        <ng-template #activeCancel>
+          {{ 'ADMIN.LOANS.DELETE_MSG_ACTIVE' | translate : { id: d.id } }}
+        </ng-template>
+      </p>
+      <p class="muted small">{{ 'ADMIN.LOANS.DELETE_NOTE' | translate }}</p>
+    </div>
+    <footer class="modal-foot">
+      <button type="button" class="ghost" (click)="closeDeleteModal()" [disabled]="pendingDelete">
+        {{ 'ADMIN.LOANS.BTN_ABORT' | translate }}
+      </button>
+      <button type="button" class="ghost danger" (click)="confirmDelete()" [disabled]="pendingDelete">
+        {{ 'ADMIN.LOANS.BTN_CONFIRM_CANCEL' | translate }}
+      </button>
+    </footer>
+  </div>
+</div>
+
+<!-- Détail -->
+<div class="modal-backdrop" *ngIf="detailModalOpen" (click)="closeDetailModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="detailModalOpen" role="dialog" aria-modal="true" [attr.aria-label]="'ADMIN.LOANS.DETAIL_TITLE' | translate">
+  <div class="modal-card glass modal-card--wide" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <span class="chip">ADMIN</span>
+        <strong>{{ 'ADMIN.LOANS.DETAIL_TITLE' | translate }}</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDetailModal()" [title]="'ADMIN.LOANS.CLOSE' | translate">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+    <div class="modal-body detail-body">
+      <div class="state" *ngIf="detailLoading">{{ 'ADMIN.LOANS.LOADING' | translate }}</div>
+      <div class="state err" *ngIf="detailError && !detailLoading">{{ 'ADMIN.LOANS.DETAIL_ERR' | translate }}</div>
+
+      <ng-container *ngIf="!detailLoading && !detailError">
+        <ng-container *ngIf="detailData as d">
+        <div class="detail-grid">
+          <section class="detail-block glass-soft">
+            <h3 class="detail-h">{{ 'ADMIN.LOANS.DETAIL_BOOK' | translate }}</h3>
+            <div class="detail-book">
+              <div class="thumb lg" *ngIf="d.coverUrl">
+                <img [src]="d.coverUrl" [alt]="bookTitle(d)" />
+              </div>
+              <div class="thumb lg thumb--ph" *ngIf="!d.coverUrl">📘</div>
+              <div>
+                <a class="link strong" [routerLink]="['/books', d.bookId]">{{ bookTitle(d) }}</a>
+                <div class="muted" *ngIf="d.bookAuthor">{{ d.bookAuthor }}</div>
+                <div class="mono small">{{ d.bookId }}</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="detail-block glass-soft">
+            <h3 class="detail-h">{{ 'ADMIN.LOANS.DETAIL_USER' | translate }}</h3>
+            <p class="detail-p">{{ userLabel(d) }}</p>
+            <p class="muted small" *ngIf="d.userEmail">{{ d.userEmail }}</p>
+            <p class="mono small">{{ d.userUid }}</p>
+          </section>
+
+          <section class="detail-block glass-soft detail-span">
+            <h3 class="detail-h">{{ 'ADMIN.LOANS.DETAIL_DATES' | translate }}</h3>
+            <dl class="detail-dl">
+              <dt>{{ 'ADMIN.LOANS.TH_START' | translate }}</dt>
+              <dd>{{ d.borrowedAt | date : 'medium' }}</dd>
+              <dt>{{ 'ADMIN.LOANS.TH_DUE' | translate }}</dt>
+              <dd>{{ d.dueAt | date : 'medium' }}</dd>
+              <dt>{{ 'ADMIN.LOANS.TH_RETURNED' | translate }}</dt>
+              <dd>{{ d.returnedAt ? (d.returnedAt | date : 'medium') : '—' }}</dd>
+              <dt>{{ 'ADMIN.LOANS.RENEWALS' | translate }}</dt>
+              <dd>{{ d.renewalCount }}</dd>
+              <dt>{{ 'ADMIN.LOANS.STATUS' | translate }}</dt>
+              <dd>
+                <span class="pill" [ngClass]="'st-' + normStatus(d).toLowerCase()">{{ statusLabelKey(d) | translate }}</span>
+              </dd>
+            </dl>
+          </section>
+        </div>
+
+        <section class="history-block glass-soft">
+          <h3 class="detail-h">{{ 'ADMIN.LOANS.DETAIL_HISTORY' | translate }}</h3>
+          <ul class="history-list" *ngIf="d.history.length; else noHist">
+            <li *ngFor="let h of d.history">
+              <span class="history-type">{{ h.type }}</span>
+              <span class="history-time muted">{{ h.occurredAt | date : 'medium' }}</span>
+              <div class="history-sum">{{ h.summary }}</div>
+            </li>
+          </ul>
+          <ng-template #noHist>
+            <p class="muted">{{ 'ADMIN.LOANS.HISTORY_EMPTY' | translate }}</p>
+          </ng-template>
+        </section>
+
+        <footer class="detail-foot">
+          <button type="button" class="ghost" *ngIf="canRenew(d)" [disabled]="isPending(d.id)" (click)="renewFromDetail()">
+            {{ 'ADMIN.LOANS.ACTION_RENEW' | translate }}
+          </button>
+          <button type="button" class="ghost cta-return" *ngIf="canReturn(d)" [disabled]="isPending(d.id)" (click)="returnFromDetail()">
+            {{ 'ADMIN.LOANS.ACTION_RETURN' | translate }}
+          </button>
+          <button type="button" class="ghost danger" [disabled]="isPending(d.id)" (click)="cancelFromDetail()">
+            {{ 'ADMIN.LOANS.ACTION_CANCEL' | translate }}
+          </button>
+        </footer>
+        </ng-container>
+      </ng-container>
+    </div>
+  </div>
+</div>

@@ -1,5 +1,6 @@
 import {
   ChangeDetectionStrategy,
+  ChangeDetectorRef,
   Component,
   ElementRef,
   OnDestroy,
@@ -11,7 +12,7 @@ import { NavigationCancel, NavigationEnd, NavigationStart, Router } from '@angul
 import gsap from 'gsap';
 import { Subscription, filter } from 'rxjs';
 
-import { BackendApiService } from './services/backend-api.service';
+import { BackendApiService } from './features/system/services/backend-api.service';
 
 @Component({
   selector: 'app-root',
@@ -22,15 +23,21 @@ import { BackendApiService } from './services/backend-api.service';
 export class AppComponent implements OnInit, OnDestroy {
   title = 'bookcloud';
 
+  /** Navbar + footer publics masqués sur l’espace staff (ex. `/admin`). */
+  showPublicChrome = true;
+
   @ViewChild('routeShell') routeShell?: ElementRef<HTMLElement>;
 
   private readonly backend = inject(BackendApiService);
   private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
   private routeAnim?: gsap.core.Tween;
   private readonly subs = new Subscription();
   private initialNavigation = true;
 
   ngOnInit(): void {
+    this.syncPublicChrome(this.router.url);
+
     this.backend.health().subscribe({
       next: (r) => console.log('[bookcloud] Backend health:', r),
       error: (e) => console.warn('[bookcloud] Backend injoignable ou CORS:', e),
@@ -47,6 +54,9 @@ export class AppComponent implements OnInit, OnDestroy {
           ),
         )
         .subscribe((e) => {
+          if (e instanceof NavigationEnd) {
+            this.syncPublicChrome(e.urlAfterRedirects);
+          }
           const el = this.routeShell?.nativeElement;
           if (!el) {
             return;
@@ -78,6 +88,16 @@ export class AppComponent implements OnInit, OnDestroy {
           });
         }),
     );
+  }
+
+  private syncPublicChrome(url: string): void {
+    const path = url.split(/[?#]/)[0] ?? '';
+    const staff = path === '/admin' || path.startsWith('/admin/');
+    if (this.showPublicChrome === !staff) {
+      return;
+    }
+    this.showPublicChrome = !staff;
+    this.cdr.markForCheck();
   }
 
   ngOnDestroy(): void {

@@ -1,0 +1,25 @@
+<section class="categories-section">
+  <h2 class="section-title">{{ 'CATEGORIES.TITLE' | translate }}</h2>
+
+  <p class="categories-status" *ngIf="loading">{{ 'CATEGORIES.LOADING' | translate }}</p>
+  <p class="categories-status" *ngIf="!loading && !cards.length">{{ 'CATEGORIES.EMPTY' | translate }}</p>
+
+  <div class="categories-grid" *ngIf="cards.length">
+    <a
+      class="category-card"
+      *ngFor="let c of cards"
+      [routerLink]="['/catalogue']"
+      [queryParams]="{ categoryId: c.id }"
+    >
+      <div
+        class="category-inner"
+        [class.category-inner--photo]="!!c.imageUrl"
+        [style.background]="cardBackground(c)"
+      >
+        <span *ngIf="!c.imageUrl" class="cat-icon" [attr.data-icon]="c.icon" aria-hidden="true"></span>
+        <h3 class="cat-name">{{ c.name }}</h3>
+        <p class="cat-count">{{ 'CATEGORIES.COUNT' | translate: { count: (c.count | number) } }}</p>
+      </div>
+    </a>
+  </div>
+</section>

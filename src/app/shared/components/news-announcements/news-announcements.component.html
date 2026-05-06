@@ -1,0 +1,62 @@
+<section class="news-section home-section">
+  <div class="section-header">
+    <span class="section-badge">{{ 'HOME.NEWS.BADGE' | translate }}</span>
+    <h2 class="section-title news-title-main">{{ 'HOME.NEWS.TITLE' | translate }}</h2>
+    <p class="section-subtitle">{{ 'HOME.NEWS.SUBTITLE' | translate }}</p>
+    <a routerLink="/catalogue" class="view-all">{{ 'HOME.NEWS.VIEW_ALL' | translate }}</a>
+  </div>
+
+  <div class="news-tabs">
+    <button type="button" class="tab" [class.on]="activeTab === 'ALL'" (click)="setTab('ALL')">All</button>
+    <button type="button" class="tab" [class.on]="activeTab === 'ANNOUNCEMENT'" (click)="setTab('ANNOUNCEMENT')">📢</button>
+    <button type="button" class="tab" [class.on]="activeTab === 'EVENT'" (click)="setTab('EVENT')">📅</button>
+    <button type="button" class="tab" [class.on]="activeTab === 'TIP'" (click)="setTab('TIP')">💡</button>
+  </div>
+
+  <div class="news-grid" *ngIf="loading; else dataTpl">
+    <div class="sk-featured shimmer"></div>
+    <div class="sk-list">
+      <div class="sk-row shimmer" *ngFor="let _ of [1, 2, 3, 4]"></div>
+    </div>
+  </div>
+
+  <ng-template #dataTpl>
+    <p class="news-empty" *ngIf="!loading && filtered().length === 0">Aucune actualité pour le moment.</p>
+
+    <div class="news-grid" *ngIf="featuredItem() as feat">
+      <article class="news-featured">
+        <div class="featured-bg" [ngStyle]="bgStyle(feat)" [class.no-img]="!feat.imageUrl">
+          <div class="featured-overlay"></div>
+          <span class="type-badge" [ngClass]="badgeMeta(feat.type).cls">
+            {{ badgeMeta(feat.type).icon }} {{ badgeMeta(feat.type).label }}
+          </span>
+          <div class="featured-body">
+            <time>{{ formatDate(feat.createdAt) }}</time>
+            <h3>{{ feat.title }}</h3>
+            <p>{{ feat.content }}</p>
+          </div>
+        </div>
+      </article>
+
+      <div class="news-list">
+        <div class="news-item" *ngFor="let n of sideItems(feat)">
+          <span class="ico-square" [ngClass]="badgeMeta(n.type).cls"></span>
+          <div class="news-item-text">
+            <time>{{ formatDate(n.createdAt) }}</time>
+            <strong>{{ n.title }}</strong>
+            <span class="mini-badge">{{ badgeMeta(n.type).label }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-template>
+
+  <ng-template #skeletonTpl>
+    <div class="news-grid skeleton-grid">
+      <div class="sk-featured shimmer"></div>
+      <div class="sk-list">
+        <div class="sk-row shimmer" *ngFor="let _ of [1, 2, 3, 4]"></div>
+      </div>
+    </div>
+  </ng-template>
+</section>

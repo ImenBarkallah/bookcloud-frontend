@@ -1,6 +1,0 @@
-<div class="auth-toast-wrap" *ngIf="msg as m">
-  <div class="auth-toast-panel" [class.success]="m.variant === 'success'" role="alert">
-    <p>{{ translationKey(m.text) | translate }}</p>
-    <button type="button" class="toast-close" (click)="dismissAnimated()" aria-label="Close">×</button>
-  </div>
-</div>

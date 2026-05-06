@@ -1,0 +1,164 @@
+<section class="admin-layout">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Tableau de bord" [showSearch]="true">
+      <button type="button" class="topbtn" disabled>
+        <app-hero-icon name="plus" size="sm" />
+        <span>Nouveau</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head
+        badge="ADMIN"
+        title="Vue d'ensemble"
+        subtitle="Indicateurs · actions rapides · système"
+      >
+        <canvas #bgCanvas class="head-canvas" aria-hidden="true"></canvas>
+      </app-admin-page-head>
+
+      <main class="content">
+      <div class="state" *ngIf="loading">Chargement…</div>
+      <div class="state err" *ngIf="error">Impossible de charger le tableau de bord.</div>
+
+      <div #gridRoot class="grid" *ngIf="!loading && !error && kpis as k">
+        <article class="kpi glass">
+          <div class="kpi-head">
+            <div class="kpi-ico"><app-hero-icon name="users" size="lg" /></div>
+            <div class="kpi-meta">
+              <div class="kpi-label">Users</div>
+              <div class="kpi-hint">Registered members</div>
+            </div>
+            <span class="chip">/api/users</span>
+          </div>
+          <div class="kpi-val">{{ k.users }}</div>
+        </article>
+
+        <article class="kpi glass">
+          <div class="kpi-head">
+            <div class="kpi-ico"><app-hero-icon name="cube" size="lg" /></div>
+            <div class="kpi-meta">
+              <div class="kpi-label">Loans</div>
+              <div class="kpi-hint">Total loans</div>
+            </div>
+            <span class="chip">/api/loans</span>
+          </div>
+          <div class="kpi-val">{{ k.loans }}</div>
+        </article>
+
+        <article class="kpi glass">
+          <div class="kpi-head">
+            <div class="kpi-ico"><app-hero-icon name="bookmark" size="lg" /></div>
+            <div class="kpi-meta">
+              <div class="kpi-label">Reservations</div>
+              <div class="kpi-hint">Total reservations</div>
+            </div>
+            <span class="chip">/api/reservations</span>
+          </div>
+          <div class="kpi-val">{{ k.reservations }}</div>
+        </article>
+
+        <article class="kpi glass">
+          <div class="kpi-head">
+            <div class="kpi-ico"><app-hero-icon name="credit-card" size="lg" /></div>
+            <div class="kpi-meta">
+              <div class="kpi-label">Fines</div>
+              <div class="kpi-hint">Issued fines</div>
+            </div>
+            <span class="chip">/api/fines</span>
+          </div>
+          <div class="kpi-val">{{ k.fines }}</div>
+        </article>
+
+        <section class="panel glass span-8">
+          <header class="panel-head">
+            <h2>Actions rapides</h2>
+            <span class="hint">Raccourcis catalogue</span>
+          </header>
+          <div class="actions">
+            <a class="action" routerLink="/catalogue">
+              <span class="a-ico"><app-hero-icon name="book-open" size="lg" /></span>
+              <span class="a-txt">
+                <strong>Ouvrir le catalogue</strong>
+                <em>Recherche & gestion</em>
+              </span>
+            </a>
+            <a class="action" routerLink="/authors">
+              <span class="a-ico"><app-hero-icon name="pencil-square" size="lg" /></span>
+              <span class="a-txt">
+                <strong>Liste des auteurs</strong>
+                <em>Page publique</em>
+              </span>
+            </a>
+            <a class="action" routerLink="/categories">
+              <span class="a-ico"><app-hero-icon name="tag" size="lg" /></span>
+              <span class="a-txt">
+                <strong>Liste des catégories</strong>
+                <em>Page publique</em>
+              </span>
+            </a>
+          </div>
+        </section>
+
+        <section class="panel glass span-4">
+          <header class="panel-head">
+            <h2>Système</h2>
+            <span class="hint">Santé API & identité</span>
+          </header>
+          <div class="syslist">
+            <div class="sys">
+              <div class="sys-lab">Health</div>
+              <div class="sys-val">/api/public/health</div>
+            </div>
+            <div class="sys">
+              <div class="sys-lab">Me</div>
+              <div class="sys-val">/api/me</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel glass span-12">
+          <header class="panel-head">
+            <h2>Synthèse</h2>
+            <span class="hint">Aperçu des compteurs API</span>
+          </header>
+          <div class="table">
+            <div class="tr th">
+              <div>ID</div>
+              <div>Label</div>
+              <div>Endpoint</div>
+              <div class="r">Count</div>
+            </div>
+            <div class="tr">
+              <div>1</div>
+              <div>Users</div>
+              <div>/api/users</div>
+              <div class="r">{{ k.users }}</div>
+            </div>
+            <div class="tr">
+              <div>2</div>
+              <div>Loans</div>
+              <div>/api/loans</div>
+              <div class="r">{{ k.loans }}</div>
+            </div>
+            <div class="tr">
+              <div>3</div>
+              <div>Reservations</div>
+              <div>/api/reservations</div>
+              <div class="r">{{ k.reservations }}</div>
+            </div>
+            <div class="tr">
+              <div>4</div>
+              <div>Fines</div>
+              <div>/api/fines</div>
+              <div class="r">{{ k.fines }}</div>
+            </div>
+          </div>
+        </section>
+      </div>
+      </main>
+    </div>
+  </div>
+</section>
+
