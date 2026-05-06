@@ -4,10 +4,13 @@ import {
   Component,
   ElementRef,
   OnDestroy,
+  OnInit,
   inject,
 } from '@angular/core';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+import { PublicHomeStatsService } from '../../services/public-home-stats.service';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -17,9 +20,21 @@ gsap.registerPlugin(ScrollTrigger);
   styleUrls: ['./stats-banner.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class StatsBannerComponent implements AfterViewInit, OnDestroy {
+export class StatsBannerComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
+  private readonly api = inject(PublicHomeStatsService);
   private triggers: ScrollTrigger[] = [];
+
+  stats = { books: 0, members: 0 };
+
+  ngOnInit(): void {
+    this.api.getHomeStats().subscribe({
+      next: (s) => {
+        this.stats = { books: Number(s?.books ?? 0), members: Number(s?.members ?? 0) };
+      },
+      error: () => {},
+    });
+  }
 
   ngAfterViewInit(): void {
     const root = this.host.nativeElement;
@@ -33,8 +48,10 @@ export class StatsBannerComponent implements AfterViewInit, OnDestroy {
         start: 'top 88%',
         once: true,
         onEnter: () => {
+          // If the dataset value is updated later (async stats), re-read it at animation start.
+          const target = Number(el.dataset['countEnd'] ?? end);
           gsap.to(obj, {
-            val: end,
+            val: target,
             duration: 2.2,
             ease: 'power2.out',
             onUpdate: () => {

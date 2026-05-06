@@ -11,9 +11,14 @@ import {
 } from '@angular/core';
 import { Router } from '@angular/router';
 import { animate, inView, stagger } from '@motionone/dom';
+import { Subject, Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { BookListItem } from '../../../models/home-sections.models';
 import { BooksCatalogApiService } from '../../../core/services/books-catalog-api.service';
+import { BookApiService } from '../../../features/books/services/book-api.service';
+import { CategoryApiService } from '../../../core/services/category-api.service';
+import { CategoryOption } from '../../../core/services/catalogue.models';
 
 @Component({
   selector: 'app-quick-search-strip',
@@ -24,38 +29,71 @@ import { BooksCatalogApiService } from '../../../core/services/books-catalog-api
 export class QuickSearchStripComponent implements OnInit, AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
   private readonly api = inject(BooksCatalogApiService);
+  private readonly bookApi = inject(BookApiService);
+  private readonly categoriesApi = inject(CategoryApiService);
   private readonly router = inject(Router);
   private readonly cdr = inject(ChangeDetectorRef);
 
   query = '';
-  categoryFilter = 'all';
+  categoryFilter: string | null = null;
   suggestions: BookListItem[] = [];
   showSuggestions = false;
-  allBooks: BookListItem[] = [];
-  booksLoaded = false;
+  private readonly query$ = new Subject<string>();
+  private sub?: Subscription;
 
   readonly trending = ['Harry Potter', 'Dune', 'Sapiens', '1984', 'Le Petit Prince'];
 
-  readonly categories = [
-    { id: 'all', labelKey: 'HOME.QUICK_SEARCH.CAT_ALL' },
-    { id: 'fiction', labelKey: 'HOME.QUICK_SEARCH.CAT_FICTION' },
-    { id: 'science', labelKey: 'HOME.QUICK_SEARCH.CAT_SCIENCE' },
-    { id: 'history', labelKey: 'HOME.QUICK_SEARCH.CAT_HISTORY' },
-    { id: 'art', labelKey: 'HOME.QUICK_SEARCH.CAT_ART' },
-    { id: 'tech', labelKey: 'HOME.QUICK_SEARCH.CAT_TECH' },
-    { id: 'kids', labelKey: 'HOME.QUICK_SEARCH.CAT_KIDS' },
-  ];
+  categories: CategoryOption[] = [];
 
   private stopInView?: () => void;
   private pillLoopStop?: () => void;
   private blurTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
-    this.api.listBooks().subscribe((books) => {
-      this.allBooks = books ?? [];
-      this.booksLoaded = true;
-      this.cdr.markForCheck();
+    // Real categories from backend
+    this.categoriesApi.GetAllCategories().subscribe({
+      next: (c) => {
+        this.categories = c ?? [];
+        this.cdr.markForCheck();
+      },
+      error: () => {},
     });
+
+    // Real-time suggestions from backend (paged search)
+    this.sub = this.query$
+      .pipe(
+        debounceTime(250),
+        distinctUntilChanged(),
+        switchMap((q) =>
+          this.bookApi.getPaged({
+            page: 0,
+            size: 5,
+            search: q || undefined,
+            categoryId: this.categoryFilter,
+          }),
+        ),
+      )
+      .subscribe({
+        next: (res) => {
+          this.suggestions =
+            (res?.content ?? []).map((b) => ({
+              id: b.id,
+              title: b.title,
+              author: b.author,
+              isbn: b.isbn ?? undefined,
+              coverUrl: b.coverUrl ?? undefined,
+              categoryId: b.categoryId,
+            })) ?? [];
+          this.showSuggestions = (this.query.trim().length > 0 && this.suggestions.length > 0) || false;
+          this.cdr.markForCheck();
+          this.staggerSuggestions();
+        },
+        error: () => {
+          this.suggestions = [];
+          this.showSuggestions = false;
+          this.cdr.markForCheck();
+        },
+      });
   }
 
   ngAfterViewInit(): void {
@@ -94,6 +132,8 @@ export class QuickSearchStripComponent implements OnInit, AfterViewInit, OnDestr
     this.stopInView?.();
     this.pillLoopStop?.();
     clearTimeout(this.blurTimer);
+    this.sub?.unsubscribe();
+    this.query$.complete();
   }
 
   hideSuggestionsDelayed(): void {
@@ -105,23 +145,13 @@ export class QuickSearchStripComponent implements OnInit, AfterViewInit, OnDestr
 
   onQueryInput(): void {
     const q = this.query.trim().toLowerCase();
-    if (!q || !this.allBooks.length) {
+    if (!q) {
       this.suggestions = [];
       this.showSuggestions = false;
       this.cdr.markForCheck();
       return;
     }
-    this.suggestions = this.allBooks
-      .filter(
-        (b) =>
-          (b.title?.toLowerCase().includes(q) ?? false) ||
-          (b.author?.toLowerCase().includes(q) ?? false) ||
-          (b.isbn?.toLowerCase().includes(q) ?? false),
-      )
-      .slice(0, 5);
-    this.showSuggestions = this.suggestions.length > 0;
-    this.cdr.markForCheck();
-    this.staggerSuggestions();
+    this.query$.next(this.query.trim());
   }
 
   private staggerSuggestions(): void {
@@ -142,19 +172,19 @@ export class QuickSearchStripComponent implements OnInit, AfterViewInit, OnDestr
   pickSuggestion(b: BookListItem): void {
     this.query = b.title ?? '';
     this.showSuggestions = false;
-    this.router.navigate(['/catalogue'], { queryParams: { q: this.query } });
+    this.router.navigate(['/catalogue'], {
+      queryParams: { search: this.query.trim(), category: this.categoryFilter || undefined },
+    });
   }
 
   submitSearch(): void {
     const q = this.query.trim();
-    const params: Record<string, string> = {};
-    if (q) {
-      params['q'] = q;
-    }
-    if (this.categoryFilter && this.categoryFilter !== 'all') {
-      params['cat'] = this.categoryFilter;
-    }
-    this.router.navigate(['/catalogue'], { queryParams: params });
+    this.router.navigate(['/catalogue'], {
+      queryParams: {
+        search: q || undefined,
+        category: this.categoryFilter || undefined,
+      },
+    });
     this.showSuggestions = false;
   }
 

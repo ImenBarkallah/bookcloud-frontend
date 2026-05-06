@@ -43,6 +43,7 @@ import { AdminLibrarySettingsPageComponent } from './features/dashboard/admin/se
 import { AdminModerationPageComponent } from './features/dashboard/admin/moderation/admin-moderation-page.component';
 import { AdminOffersPageComponent } from './features/dashboard/admin/offers/admin-offers-page.component';
 import { AdminNewsPageComponent } from './features/dashboard/admin/news/admin-news-page.component';
+import { AdminBranchesPageComponent } from './features/dashboard/admin/branches/admin-branches-page.component';
 import { ErrorPageComponent } from './features/errors/error-page.component';
 
 const routes: Routes = [
@@ -91,6 +92,7 @@ const routes: Routes = [
     children: [
       { path: '', component: AdminDashboardPageComponent },
       { path: 'categories', component: AdminCategoriesPageComponent },
+      { path: 'branches', component: AdminBranchesPageComponent },
       { path: 'partners', component: AdminPartnersPageComponent },
       { path: 'loans', component: AdminLoansPageComponent },
       { path: 'reservations', component: AdminReservationsPageComponent },
@@ -127,11 +129,7 @@ const routes: Routes = [
     ],
   },
 
-  // Error pages
-  { path: '404', component: ErrorPageComponent, data: { errorKind: 'not-found' } },
-  { path: '403', component: ErrorPageComponent, data: { errorKind: 'forbidden' } },
-  { path: '500', component: ErrorPageComponent, data: { errorKind: 'server' } },
-  { path: '**', component: ErrorPageComponent, data: { errorKind: 'not-found' } },
+  { path: '**', redirectTo: '' },
 ];
 
 @NgModule({

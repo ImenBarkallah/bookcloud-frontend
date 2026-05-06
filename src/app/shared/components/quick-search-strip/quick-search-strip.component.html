@@ -34,7 +34,8 @@
 
       <div class="category-select-wrap">
         <select class="category-select" [(ngModel)]="categoryFilter">
-          <option *ngFor="let c of categories" [value]="c.id">{{ c.labelKey | translate }}</option>
+          <option [ngValue]="null">{{ 'CATALOGUE.CATEGORY_ALL' | translate }}</option>
+          <option *ngFor="let c of categories" [ngValue]="c.id">{{ c.name }}</option>
         </select>
       </div>
 

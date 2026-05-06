@@ -22,54 +22,223 @@
       <div class="state" *ngIf="loading">Chargement…</div>
       <div class="state err" *ngIf="error">Impossible de charger le tableau de bord.</div>
 
-      <div #gridRoot class="grid" *ngIf="!loading && !error && kpis as k">
+      <div #gridRoot class="grid" *ngIf="!loading && !error && overview as o">
         <article class="kpi glass">
           <div class="kpi-head">
-            <div class="kpi-ico"><app-hero-icon name="users" size="lg" /></div>
+            <div class="kpi-ico"><app-hero-icon name="book-open" size="lg" /></div>
             <div class="kpi-meta">
-              <div class="kpi-label">Users</div>
-              <div class="kpi-hint">Registered members</div>
+              <div class="kpi-label">Livres</div>
+              <div class="kpi-hint">Total · copies · disponibilité</div>
             </div>
-            <span class="chip">/api/users</span>
           </div>
-          <div class="kpi-val">{{ k.users }}</div>
+          <div class="kpi-val">{{ o.totalBooks }}</div>
+          <div class="kpi-sub">
+            <span class="muted">{{ o.availableCopies }}</span><span class="muted"> dispo</span>
+            <span class="sep">·</span>
+            <span class="muted">{{ o.borrowedCopies }}</span><span class="muted"> emprunté</span>
+          </div>
         </article>
 
         <article class="kpi glass">
           <div class="kpi-head">
             <div class="kpi-ico"><app-hero-icon name="cube" size="lg" /></div>
             <div class="kpi-meta">
-              <div class="kpi-label">Loans</div>
-              <div class="kpi-hint">Total loans</div>
+              <div class="kpi-label">Emprunts</div>
+              <div class="kpi-hint">Actifs · en retard · aujourd’hui</div>
             </div>
-            <span class="chip">/api/loans</span>
           </div>
-          <div class="kpi-val">{{ k.loans }}</div>
+          <div class="kpi-val">{{ o.activeLoans }}</div>
+          <div class="kpi-sub">
+            <span class="muted">{{ o.overdueLoans }}</span><span class="muted"> retard</span>
+            <span class="sep">·</span>
+            <span class="muted">{{ o.loansToday }}</span><span class="muted"> aujourd’hui</span>
+          </div>
+        </article>
+
+        <article class="kpi glass">
+          <div class="kpi-head">
+            <div class="kpi-ico"><app-hero-icon name="users" size="lg" /></div>
+            <div class="kpi-meta">
+              <div class="kpi-label">Utilisateurs</div>
+              <div class="kpi-hint">Total · nouveaux · actifs</div>
+            </div>
+          </div>
+          <div class="kpi-val">{{ o.totalUsers }}</div>
+          <div class="kpi-sub">
+            <span class="muted">{{ o.newUsersThisMonth }}</span><span class="muted"> ce mois</span>
+            <span class="sep">·</span>
+            <span class="muted">{{ o.activeUsers }}</span><span class="muted"> actifs</span>
+          </div>
         </article>
 
         <article class="kpi glass">
           <div class="kpi-head">
             <div class="kpi-ico"><app-hero-icon name="bookmark" size="lg" /></div>
             <div class="kpi-meta">
-              <div class="kpi-label">Reservations</div>
-              <div class="kpi-hint">Total reservations</div>
+              <div class="kpi-label">Réservations</div>
+              <div class="kpi-hint">En attente · confirmées</div>
             </div>
-            <span class="chip">/api/reservations</span>
           </div>
-          <div class="kpi-val">{{ k.reservations }}</div>
+          <div class="kpi-val">{{ o.pendingReservations }}</div>
+          <div class="kpi-sub">
+            <span class="muted">{{ o.approvedReservations }}</span><span class="muted"> confirmées</span>
+          </div>
         </article>
 
-        <article class="kpi glass">
-          <div class="kpi-head">
-            <div class="kpi-ico"><app-hero-icon name="credit-card" size="lg" /></div>
-            <div class="kpi-meta">
-              <div class="kpi-label">Fines</div>
-              <div class="kpi-hint">Issued fines</div>
+        <section class="panel glass span-4">
+          <header class="panel-head">
+            <h2>Distribution</h2>
+            <span class="hint">Disponible · emprunté · réservé</span>
+          </header>
+          <div class="pie" *ngIf="overview as ov">
+            <svg class="pie-svg" viewBox="0 0 120 120" aria-hidden="true">
+              <circle class="pie-track" cx="60" cy="60" r="44"></circle>
+              <ng-container *ngFor="let s of pieSegments().items; index as i">
+                <circle
+                  class="pie-seg"
+                  cx="60"
+                  cy="60"
+                  r="44"
+                  [attr.stroke]="s.color"
+                  [attr.stroke-dasharray]="s.dasharray"
+                ></circle>
+              </ng-container>
+            </svg>
+            <div class="pie-legend">
+              <div class="lg" *ngFor="let s of pieSegments().items">
+                <span class="swatch" [style.background]="s.color"></span>
+                <span class="txt">{{ s.label }}</span>
+                <span class="val mono">{{ s.value }}</span>
+              </div>
             </div>
-            <span class="chip">/api/fines</span>
           </div>
-          <div class="kpi-val">{{ k.fines }}</div>
-        </article>
+        </section>
+
+        <section class="panel glass span-8">
+          <header class="panel-head">
+            <h2>Livres par catégorie</h2>
+            <span class="hint">Top catégories</span>
+          </header>
+          <div class="bars" *ngIf="byCategory.length; else emptyBars">
+            <div class="bar" *ngFor="let c of byCategory">
+              <div class="bar-head">
+                <span class="bar-name">{{ c.categoryName }}</span>
+                <span class="bar-val mono">{{ c.books }}</span>
+              </div>
+              <div class="bar-track">
+                <div class="bar-fill" [style.width.%]="(c.books / categoryMax()) * 100"></div>
+              </div>
+            </div>
+          </div>
+          <ng-template #emptyBars>
+            <div class="muted">Aucune donnée de catégories.</div>
+          </ng-template>
+        </section>
+
+        <section class="panel glass span-8">
+          <header class="panel-head">
+            <h2>Activité mensuelle</h2>
+            <span class="hint">Emprunts vs inscriptions</span>
+          </header>
+          <div class="chart-wrap" *ngIf="monthly.length; else chartEmpty">
+            <svg class="chart" viewBox="0 0 520 140" preserveAspectRatio="none" aria-hidden="true">
+              <polyline class="line line-loans" [attr.points]="linePoints(seriesLoans())"></polyline>
+              <polyline class="line line-signups" [attr.points]="linePoints(seriesSignups())"></polyline>
+            </svg>
+            <div class="legend">
+              <span class="dot dot-loans"></span><span>Emprunts</span>
+              <span class="dot dot-signups"></span><span>Inscriptions</span>
+            </div>
+            <div class="xlab">
+              <span class="muted">{{ monthly[0].month }}</span>
+              <span class="muted">{{ monthly[monthly.length - 1].month }}</span>
+            </div>
+          </div>
+          <ng-template #chartEmpty>
+            <div class="muted">Aucune donnée de série.</div>
+          </ng-template>
+        </section>
+
+        <section class="panel glass span-4">
+          <header class="panel-head">
+            <h2>Amendes</h2>
+            <span class="hint">Dette & pénalités</span>
+          </header>
+          <div class="syslist">
+            <div class="sys">
+              <div class="sys-lab">Total amendes</div>
+              <div class="sys-val">{{ o.totalFines }}</div>
+            </div>
+            <div class="sys">
+              <div class="sys-lab">Ouvertes</div>
+              <div class="sys-val">{{ o.openFines }}</div>
+            </div>
+            <div class="sys">
+              <div class="sys-lab">Utilisateurs avec dettes</div>
+              <div class="sys-val">{{ o.usersWithDebt }}</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel glass span-6">
+          <header class="panel-head">
+            <h2>🔥 Top livres (emprunts)</h2>
+            <span class="hint">Les plus empruntés</span>
+          </header>
+          <div class="toplist" *ngIf="topBorrowed.length; else emptyTopBorrowed">
+            <div class="toprow" *ngFor="let b of topBorrowed; index as i">
+              <div class="rank">{{ i + 1 }}</div>
+              <div class="meta">
+                <div class="title">{{ b.title }}</div>
+                <div class="muted small">{{ b.author }}</div>
+              </div>
+              <div class="r mono">{{ b.borrowCount }}</div>
+            </div>
+          </div>
+          <ng-template #emptyTopBorrowed>
+            <div class="muted">Aucune donnée.</div>
+          </ng-template>
+        </section>
+
+        <section class="panel glass span-6">
+          <header class="panel-head">
+            <h2>⭐ Top livres (favoris)</h2>
+            <span class="hint">Les plus populaires</span>
+          </header>
+          <div class="toplist" *ngIf="topFavorited.length; else emptyTopFav">
+            <div class="toprow" *ngFor="let b of topFavorited; index as i">
+              <div class="rank">{{ i + 1 }}</div>
+              <div class="meta">
+                <div class="title">{{ b.title }}</div>
+                <div class="muted small">{{ b.author }}</div>
+              </div>
+              <div class="r mono">{{ b.favoriteCount }}</div>
+            </div>
+          </div>
+          <ng-template #emptyTopFav>
+            <div class="muted">Aucune donnée.</div>
+          </ng-template>
+        </section>
+
+        <section class="panel glass span-6">
+          <header class="panel-head">
+            <h2>Top utilisateurs</h2>
+            <span class="hint">Les plus actifs (emprunts)</span>
+          </header>
+          <div class="toplist" *ngIf="topUsers.length; else emptyTopUsers">
+            <div class="toprow" *ngFor="let u of topUsers; index as i">
+              <div class="rank">{{ i + 1 }}</div>
+              <div class="meta">
+                <div class="title">{{ u.displayName }}</div>
+                <div class="muted small">{{ u.email || u.userUid }}</div>
+              </div>
+              <div class="r mono">{{ u.totalLoans }}</div>
+            </div>
+          </div>
+          <ng-template #emptyTopUsers>
+            <div class="muted">Aucune donnée.</div>
+          </ng-template>
+        </section>
 
         <section class="panel glass span-8">
           <header class="panel-head">
@@ -120,41 +289,19 @@
 
         <section class="panel glass span-12">
           <header class="panel-head">
-            <h2>Synthèse</h2>
-            <span class="hint">Aperçu des compteurs API</span>
+            <h2>Activités récentes</h2>
+            <span class="hint">Chronologie (bibliothèque)</span>
           </header>
-          <div class="table">
-            <div class="tr th">
-              <div>ID</div>
-              <div>Label</div>
-              <div>Endpoint</div>
-              <div class="r">Count</div>
-            </div>
-            <div class="tr">
-              <div>1</div>
-              <div>Users</div>
-              <div>/api/users</div>
-              <div class="r">{{ k.users }}</div>
-            </div>
-            <div class="tr">
-              <div>2</div>
-              <div>Loans</div>
-              <div>/api/loans</div>
-              <div class="r">{{ k.loans }}</div>
-            </div>
-            <div class="tr">
-              <div>3</div>
-              <div>Reservations</div>
-              <div>/api/reservations</div>
-              <div class="r">{{ k.reservations }}</div>
-            </div>
-            <div class="tr">
-              <div>4</div>
-              <div>Fines</div>
-              <div>/api/fines</div>
-              <div class="r">{{ k.fines }}</div>
+          <div class="recent" *ngIf="recent.length; else emptyRecent">
+            <div class="recent-row" *ngFor="let e of recent">
+              <div class="muted mono">{{ e.occurredAt || '—' }}</div>
+              <div class="recent-msg">{{ e.summary || e.type }}</div>
+              <div class="muted mono r">{{ e.userUid }}</div>
             </div>
           </div>
+          <ng-template #emptyRecent>
+            <div class="muted">Aucune activité récente.</div>
+          </ng-template>
         </section>
       </div>
       </main>

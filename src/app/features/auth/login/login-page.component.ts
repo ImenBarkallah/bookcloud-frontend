@@ -334,7 +334,13 @@ export class LoginPageComponent implements OnInit, AfterViewInit, OnDestroy {
     this.cdr.markForCheck();
     try {
       await this.auth.signInWithGoogle();
-      // Full-page redirect to Google — success runs after return via `redirectHandled` + `ngOnInit` navigate.
+      // Popup success: we must navigate now (no full-page redirect to trigger ngOnInit again).
+      // Redirect flow: the page navigates away, so code below won't run.
+      await this.auth.authStateReady();
+      if (this.auth.currentUser) {
+        await this.successTransition();
+        await this.router.navigateByUrl('/home');
+      }
     } catch (e: unknown) {
       const code = (e as { code?: string })?.code ?? '';
       this.toast.showErrorFromFirebase(code);

@@ -1,11 +1,11 @@
 <section class="stats-strip">
   <div class="stat-item">
-    <span class="stat-value" data-count-end="12400" data-suffix="+">0</span>
+    <span class="stat-value" [attr.data-count-end]="stats.books" data-suffix="+">0</span>
     <span class="stat-label">{{ 'STATS.BOOKS' | translate }}</span>
   </div>
   <div class="stat-divider" aria-hidden="true"></div>
   <div class="stat-item">
-    <span class="stat-value" data-count-end="3200" data-suffix="+">0</span>
+    <span class="stat-value" [attr.data-count-end]="stats.members" data-suffix="+">0</span>
     <span class="stat-label">{{ 'STATS.MEMBERS' | translate }}</span>
   </div>
   <div class="stat-divider" aria-hidden="true"></div>

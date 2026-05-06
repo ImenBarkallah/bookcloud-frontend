@@ -52,6 +52,14 @@ function mapFirebaseAuthCode(code: string): string {
       return 'ERR.WEAK_PASSWORD';
     case 'auth/popup-closed-by-user':
       return 'ERR.POPUP_CLOSED';
+    case 'auth/popup-blocked':
+      return 'ERR.POPUP_BLOCKED';
+    case 'auth/cancelled-popup-request':
+      return 'ERR.POPUP_CANCELLED';
+    case 'auth/operation-not-allowed':
+      return 'ERR.PROVIDER_DISABLED';
+    case 'auth/unauthorized-domain':
+      return 'ERR.UNAUTHORIZED_DOMAIN';
     case 'auth/network-request-failed':
       return 'ERR.NETWORK';
     default:

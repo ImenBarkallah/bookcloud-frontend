@@ -1,0 +1,136 @@
+<section class="admin-layout admin-branches">
+  <app-admin-sidebar />
+
+  <div class="admin-main">
+    <app-admin-topbar section="Admin" page="Branches">
+      <button type="button" class="topbtn" (click)="openCreate()">
+        <app-hero-icon name="plus" size="sm" />
+        <span>Nouvelle branche</span>
+      </button>
+      <button type="button" class="topbtn" (click)="load()">
+        <app-hero-icon name="arrow-path" size="sm" />
+        <span>Rafraîchir</span>
+      </button>
+    </app-admin-topbar>
+
+    <div class="admin-scroll">
+      <app-admin-page-head badge="ADMIN" title="Gestion des branches" subtitle="Antennes · horaires · adresse" />
+
+      <main class="content">
+        <div class="state" *ngIf="loading">Chargement…</div>
+        <div class="state err" *ngIf="error">Impossible de charger les branches.</div>
+
+        <div class="toolbar glass" *ngIf="!loading && !error">
+          <div class="tool-left">
+            <div class="search">
+              <span class="s-ico"><app-hero-icon name="magnifying-glass" size="md" /></span>
+              <input
+                [ngModel]="q"
+                (ngModelChange)="onQueryChange($event)"
+                type="text"
+                placeholder="Rechercher (nom, adresse)…"
+              />
+            </div>
+            <div class="count">
+              <span class="chip">{{ filtered.length }}</span>
+              <span class="muted">branche(s)</span>
+            </div>
+          </div>
+        </div>
+
+        <p class="empty" *ngIf="!loading && !error && filtered.length === 0">Aucune branche.</p>
+
+        <section class="table glass" *ngIf="!loading && !error && filtered.length">
+          <div class="tr th">
+            <div>Nom</div>
+            <div>Adresse</div>
+            <div>Horaires</div>
+            <div class="r">Actions</div>
+          </div>
+
+          <div class="tr row" *ngFor="let b of filtered; trackBy: trackById">
+            <div class="strong">{{ b.name || '—' }}</div>
+            <div class="muted">{{ b.address || '—' }}</div>
+            <div class="muted mono">{{ b.openingHours || '—' }}</div>
+            <div class="r actions">
+              <button type="button" class="ghost ghost--ico" (click)="openEdit(b)" title="Modifier">
+                <app-hero-icon name="pencil-square" size="sm" />
+              </button>
+              <button type="button" class="ghost danger ghost--ico" (click)="openDelete(b)" title="Supprimer">
+                <app-hero-icon name="trash" size="sm" />
+              </button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+</section>
+
+<!-- Modal create/edit -->
+<div class="modal-backdrop" *ngIf="modalOpen" (click)="closeModal()" aria-hidden="true"></div>
+<div class="modal" *ngIf="modalOpen" role="dialog" aria-modal="true" aria-label="Branche">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>{{ editing ? 'Modifier branche' : 'Créer une branche' }}</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeModal()" title="Fermer" [disabled]="pendingSave">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <div class="state" *ngIf="modalLoading">Chargement…</div>
+      <form *ngIf="!modalLoading" class="form" (submit)="$event.preventDefault(); save()">
+        <label>
+          <span>Nom</span>
+          <input type="text" [(ngModel)]="formName" name="name" required />
+        </label>
+        <label>
+          <span>Adresse</span>
+          <input type="text" [(ngModel)]="formAddress" name="address" />
+        </label>
+        <label>
+          <span>Horaires (texte libre)</span>
+          <textarea rows="3" [(ngModel)]="formOpeningHours" name="openingHours"></textarea>
+        </label>
+
+        <div class="actions">
+          <button type="button" class="ghost" (click)="closeModal()" [disabled]="pendingSave">Annuler</button>
+          <button type="submit" class="primary" [disabled]="pendingSave">
+            {{ pendingSave ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-backdrop" *ngIf="deleteOpen" (click)="closeDelete()" aria-hidden="true"></div>
+<div class="modal" *ngIf="deleteOpen" role="dialog" aria-modal="true" aria-label="Suppression">
+  <div class="modal-card glass modal-card--narrow" (click)="$event.stopPropagation()">
+    <header class="modal-head">
+      <div class="modal-title">
+        <strong>Supprimer branche</strong>
+      </div>
+      <button type="button" class="ghost ghost--ico" (click)="closeDelete()" title="Fermer" [disabled]="pendingDelete">
+        <app-hero-icon name="x-mark" size="sm" />
+      </button>
+    </header>
+
+    <div class="modal-body">
+      <p>
+        Confirmer la suppression de <strong>{{ deleteTarget?.name || 'cette branche' }}</strong> ?
+      </p>
+      <div class="actions">
+        <button type="button" class="ghost" (click)="closeDelete()" [disabled]="pendingDelete">Annuler</button>
+        <button type="button" class="primary danger" (click)="confirmDelete()" [disabled]="pendingDelete">
+          {{ pendingDelete ? 'Suppression…' : 'Supprimer' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+

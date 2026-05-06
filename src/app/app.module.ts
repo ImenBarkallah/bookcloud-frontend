@@ -33,6 +33,7 @@ import { AdminLibrarySettingsPageComponent } from './features/dashboard/admin/se
 import { AdminModerationPageComponent } from './features/dashboard/admin/moderation/admin-moderation-page.component';
 import { AdminOffersPageComponent } from './features/dashboard/admin/offers/admin-offers-page.component';
 import { AdminNewsPageComponent } from './features/dashboard/admin/news/admin-news-page.component';
+import { AdminBranchesPageComponent } from './features/dashboard/admin/branches/admin-branches-page.component';
 import { AdminSidebarComponent } from './features/dashboard/admin/components/admin-sidebar/admin-sidebar.component';
 import { AdminTopbarComponent } from './features/dashboard/admin/components/admin-topbar/admin-topbar.component';
 import { AdminPageHeadComponent } from './features/dashboard/admin/components/admin-page-head/admin-page-head.component';
@@ -88,6 +89,7 @@ import { ErrorPageComponent } from './features/errors/error-page.component';
     AdminModerationPageComponent,
     AdminOffersPageComponent,
     AdminNewsPageComponent,
+    AdminBranchesPageComponent,
     AdminSidebarComponent,
     AdminTopbarComponent,
     AdminPageHeadComponent,

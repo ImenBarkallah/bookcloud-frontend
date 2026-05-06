@@ -8,6 +8,7 @@ import {
   onAuthStateChanged,
   sendPasswordResetEmail,
   signInWithEmailAndPassword,
+	signInWithPopup,
   signInWithRedirect,
   signOut,
   updateProfile,
@@ -61,7 +62,21 @@ export class AuthService {
 
   async signInWithGoogle(): Promise<void> {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(this.auth, provider);
+		// Prefer popup when allowed (better UX on desktop). Fallback to redirect for mobile / popup-blocked.
+		try {
+			await signInWithPopup(this.auth, provider);
+		} catch (e) {
+			const code = (e as { code?: string })?.code ?? '';
+			if (
+				code === 'auth/popup-blocked' ||
+				code === 'auth/popup-closed-by-user' ||
+				code === 'auth/cancelled-popup-request'
+			) {
+				await signInWithRedirect(this.auth, provider);
+				return;
+			}
+			throw e;
+		}
   }
 
   async registerWithEmail(
